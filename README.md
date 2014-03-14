@@ -17,6 +17,7 @@ mrt add timesync
 
 - `TimeSync.serverTime(clientTime)`: returns the server time for a given client time. A reactive variable. If `clientTime` is not omitted, returns the current time on the server which reactively updates every second.
 - `TimeSync.serverOffset()`: returns the current time difference between the server and the client. Reactively updates as the offset is recomputed.
+- `TimeSync.isSynced()`: Reactive variable that determines if an initial sync has taken place.
 
 To use the above functions in a non-reactive context, use [`Deps.nonreactive`](http://docs.meteor.com/#deps_nonreactive). This is useful if you are displaying a lot of timestamps or differences on a page and you don't want them to be constantly recomputed on the client. Things should get a lot more efficient when [Blaze (Meteor UI)](https://groups.google.com/forum/#!topic/meteor-talk/fFPWxgNVFE4) is released.
 

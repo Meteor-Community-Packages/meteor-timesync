@@ -1,11 +1,12 @@
 TimeSync = {}
 
-offset = 0
+offset = undefined
 offsetDep = new Deps.Dependency
 timeTick = new Deps.Dependency
 
 # Reactive variable for server time that updates every second.
 TimeSync.serverTime = (clientTime) ->
+  return unless TimeSync.isSynced() # Don't try to add undefined to something.
   timeTick.depend() unless clientTime # No dependency for a fixed time
   offsetDep.depend()
   return (clientTime || Date.now()) + offset
@@ -14,6 +15,10 @@ TimeSync.serverTime = (clientTime) ->
 TimeSync.serverOffset = ->
   offsetDep.depend()
   return offset
+
+TimeSync.isSynced = ->
+  offsetDep.depend()
+  return offset?
 
 # To be dumb and to save traffic right now, we just compute the offset once
 # http://en.wikipedia.org/wiki/Network_Time_Protocol
@@ -24,14 +29,13 @@ updateOffset = ->
 
     if err
       Meteor._debug "Error syncing to server time: " + err
-      offset = 0 # Do something reasonable as a default
-      offsetDep.changed()
+      # We'll still use our last computed offset if is defined
       return
 
     offset = ((ts - t0) + (ts - t3)) / 2
     offsetDep.changed()
 
-updateOffset()
+updateOffset() # Run this as soon as we can!
 Meteor.setInterval(updateOffset, 600000) # 10 minutes
 
 Meteor.setInterval (-> timeTick.changed()), 1000
