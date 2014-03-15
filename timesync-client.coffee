@@ -25,6 +25,7 @@ updateOffset = ->
       return
 
     offset = ((ts - t0) + (ts - t3)) / 2
+    offset = Math.round offset # fractional values aren't helpful
     offsetDep.changed()
 
 # Reactive variable for server time that updates every second.
