@@ -3,12 +3,12 @@ Package.describe({
 });
 
 Package.on_use(function (api) {
-  api.use('coffeescript');
-  api.use('deps', 'client');
+  api.use(['deps', 'http'], 'client');
+  api.use('webapp', 'server');
 
   // Our files
-  api.add_files('timesync-server.coffee', 'server');
-  api.add_files('timesync-client.coffee', 'client');
+  api.add_files('timesync-server.js', 'server');
+  api.add_files('timesync-client.js', 'client');
 
   api.export('TimeSync', 'client');
 });

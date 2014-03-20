@@ -1,3 +1,9 @@
+## vNEXT
+
+- Switch to JS at the request of @raix and @arunoda ;-)
+- Use a middleware handler, spliced into the top of the connect stack, instead of a Meteor method to avoid arbitrary method blocking delay. This improves accuracy significantly.
+- Compute a RTT value in `TimeSync.roundTripTime` as well as a time offset.
+
 ## v0.1.3
 
 - Ensure that the computed offset is always an integer number of milliseconds.
