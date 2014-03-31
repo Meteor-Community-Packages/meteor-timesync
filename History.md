@@ -1,4 +1,4 @@
-## vNEXT
+## v0.1.4
 
 - Switch to JS at the request of @raix and @arunoda ;-)
 - Use a middleware handler, spliced into the top of the connect stack, instead of a Meteor method to avoid arbitrary method blocking delay. This improves accuracy significantly.
