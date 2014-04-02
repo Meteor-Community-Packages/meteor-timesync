@@ -1,3 +1,8 @@
+## v0.1.5
+
+- Use `WebApp.rawConnectHandlers` as a less janky way of getting our date request handled first.
+- Fixed an issue where a cached reload could result in a wacky time offset due to the server time being cached.
+
 ## v0.1.4
 
 - Switch to JS at the request of @raix and @arunoda ;-)
