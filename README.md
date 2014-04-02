@@ -21,9 +21,9 @@ mrt add timesync
 - `TimeSync.serverOffset()`: returns the current time difference between the server and the client. Reactively updates as the offset is recomputed.
 - `TimeSync.roundTripTime()`: The round trip ping to the server. Also reactive.
 - `TimeSync.isSynced()`: Reactive variable that determines if an initial sync has taken place.
-- `TimeSync.resync()`: Re-triggers a sync with the server. Can be useful because the initial sync often takes place during a lot of method calls where the sync method may have been blocked for an arbitrary amount of time.
+- `TimeSync.resync()`: Re-triggers a sync with the server. Can be useful because the initial sync often takes place during a lot of traffic with the server and could be less accurate.
 
-To use the above functions in a non-reactive context, use [`Deps.nonreactive`](http://docs.meteor.com/#deps_nonreactive). This is useful if you are displaying a lot of timestamps or differences on a page and you don't want them to be constantly recomputed on the client. Things should get a lot more efficient when [Blaze (Meteor UI)](https://groups.google.com/forum/#!topic/meteor-talk/fFPWxgNVFE4) is released.
+To use the above functions in a non-reactive context, use [`Deps.nonreactive`](http://docs.meteor.com/#deps_nonreactive). This is useful if you are displaying a lot of timestamps or differences on a page and you don't want them to be constantly recomputed on the client. However, displaying time reactively should be pretty efficient with Meteor 0.8.0+ (Blaze).
 
 ## Notes
 
