@@ -62,6 +62,37 @@ TimeSync.resync = function() {
   resyncIntervalId = Meteor.setInterval(updateOffset, 600000);
 };
 
+//resync on major client clock changes
+//based on http://stackoverflow.com/a/3367542/1656818
+var timeCheckerInterval = 2000;
+
+TimeSync.timeChecker = function() {
+  var oldTime = TimeSync.timeChecker.oldTime || new Date(),
+      newTime = new Date();
+  TimeSync.timeChecker.oldTime = newTime;
+  // Five second tolerance
+  if (Math.abs(newTime - oldTime - timeCheckerInterval) >= 5000) {
+      TimeSync.resync();
+  };
+};
+
+var handleChangeIntervalId = null;
+
+TimeSync.handleChange = function (handleIt) {
+  if (handleChangeIntervalId !== null){
+    Meteor.clearInterval(handleChangeIntervalId)
+  };
+
+  if(handleIt){
+    //set the oldTime before we wait on the first interval to fire.
+    TimeSync.timeChecker.oldTime = new Date();
+    //check for client time change
+    handleChangeIntervalId = Meteor.setInterval(function (){
+      TimeSync.timeChecker();
+    }, timeCheckerInterval);
+  };
+};
+
 // Run this as soon as we load, even before Meteor.startup()
 TimeSync.resync();
 
