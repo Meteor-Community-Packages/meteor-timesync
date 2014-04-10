@@ -17,7 +17,7 @@ mrt add timesync
 
 ## Usage
 
-- `TimeSync.serverTime(clientTime)`: returns the server time for a given client time. A reactive variable. If `clientTime` is not omitted, returns the current time on the server which reactively updates every second.
+- `TimeSync.serverTime(clientTime, handleChange)`: returns the server time for a given client time. A reactive variable. If `clientTime` is included, returns the current time on the server which reactively updates every second. If `handleChange` is `true`, a change of the client's clock will call `TimeSync.resync()`.
 - `TimeSync.serverOffset()`: returns the current time difference between the server and the client. Reactively updates as the offset is recomputed.
 - `TimeSync.roundTripTime()`: The round trip ping to the server. Also reactive.
 - `TimeSync.isSynced()`: Reactive variable that determines if an initial sync has taken place.
