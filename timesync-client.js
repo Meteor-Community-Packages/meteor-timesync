@@ -30,10 +30,9 @@ var updateOffset = function() {
 };
 
 // Reactive variable for server time that updates every second.
-TimeSync.serverTime = function(clientTime, handleChange) {
+TimeSync.serverTime = function(clientTime) {
   if ( !TimeSync.isSynced() ) return undefined; // We don't know the server time.
   if ( !clientTime ) timeTick.depend(); // We don't need to depend on the tick.
-  if ( handleChange ) TimeSync.handleChange(); //If we want to handle clock changes
   offsetDep.depend();
   return (clientTime || Date.now()) + offset;
 };
@@ -65,9 +64,7 @@ TimeSync.resync = function() {
 
 //resync on major client clock changes
 //based on http://stackoverflow.com/a/3367542/1656818
-TimeSync.timeChanged = function (diff) {
-  TimeSync.resync();
-};
+var timeCheckerInterval = 2000;
 
 TimeSync.timeChecker = function() {
   var oldTime = TimeSync.timeChecker.oldTime || new Date(),
@@ -75,14 +72,24 @@ TimeSync.timeChecker = function() {
       timeDiff = newTime - oldTime;
   TimeSync.timeChecker.oldTime = newTime;
   // Five second tolerance
-  if (Math.abs(timeDiff) >= 5000) TimeSync.timeChanged(timeDiff);
+  if (Math.abs(timeDiff) >= 5000 - timeCheckerInterval) {
+      TimeSync.resync();
+  };
 };
 
-TimeSync.handleChange = function () {
-  //check for client time change every two seconds
-  Meteor.setInterval(function (){
-    TimeSync.timeChecker();
-  }, 2000);
+var handleChangeIntervalId = null;
+
+TimeSync.handleChange = function (handleIt) {
+  if (handleChangeIntervalId !== null){
+    Meteor.clearInterval(handleChangeIntervalId)
+  };
+
+  if(handleIt){
+    //check for client time change
+    handleChangeIntervalId = Meteor.setInterval(function (){
+      TimeSync.timeChecker();
+    }, timeCheckerInterval);
+  };
 };
 
 // Run this as soon as we load, even before Meteor.startup()
