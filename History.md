@@ -1,3 +1,7 @@
+## vNEXT
+
+- Added the optional `TimeSync.watchClockChanges` which can resync if a client's clock is detected to have significantly changed.
+
 ## v0.1.5
 
 - Use `WebApp.rawConnectHandlers` as a less janky way of getting our date request handled first.

@@ -56,41 +56,41 @@ TimeSync.isSynced = function() {
 var resyncIntervalId = null;
 
 TimeSync.resync = function() {
-  if (resyncIntervalId !== null)
-    Meteor.clearInterval(resyncIntervalId);
+  if (resyncIntervalId !== null) Meteor.clearInterval(resyncIntervalId);
   updateOffset();
   resyncIntervalId = Meteor.setInterval(updateOffset, 600000);
 };
 
-//resync on major client clock changes
-//based on http://stackoverflow.com/a/3367542/1656818
+// resync on major client clock changes
+// based on http://stackoverflow.com/a/3367542/1656818
 var timeCheckerInterval = 2000;
+var timeCheckerTolerance = 1000; // Resync if unexpected change by more than one second
+var prevClientTime;
 
-TimeSync.timeChecker = function() {
-  var oldTime = TimeSync.timeChecker.oldTime || new Date(),
-      newTime = new Date();
-  TimeSync.timeChecker.oldTime = newTime;
+function timeChecker() {
+  var currentClientTime = Date.now();
   // Five second tolerance
-  if (Math.abs(newTime - oldTime - timeCheckerInterval) >= 5000) {
+  if (Math.abs(currentClientTime - prevClientTime - timeCheckerInterval) >= timeCheckerTolerance) {
       TimeSync.resync();
-  };
-};
+  }
+  prevClientTime = currentClientTime;
+}
 
-var handleChangeIntervalId = null;
+var watcherIntervalId = null;
 
-TimeSync.handleChange = function (handleIt) {
-  if (handleChangeIntervalId !== null){
-    Meteor.clearInterval(handleChangeIntervalId)
-  };
+TimeSync.watchClockChanges = function (handleIt) {
+  // Clear any existing timer
+  if ( watcherIntervalId !== null ) {
+    Meteor.clearInterval(watcherIntervalId);
+    watcherIntervalId = null; // Because we may not set a new one
+  }
 
-  if(handleIt){
-    //set the oldTime before we wait on the first interval to fire.
-    TimeSync.timeChecker.oldTime = new Date();
-    //check for client time change
-    handleChangeIntervalId = Meteor.setInterval(function (){
-      TimeSync.timeChecker();
-    }, timeCheckerInterval);
-  };
+  if( !handleIt ) return;
+
+  //set the oldTime before we wait on the first interval to fire.
+  prevClientTime = Date.now();
+  //check for client time change
+  watcherIntervalId = Meteor.setInterval(timeChecker, timeCheckerInterval);
 };
 
 // Run this as soon as we load, even before Meteor.startup()
