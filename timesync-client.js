@@ -68,11 +68,10 @@ var timeCheckerInterval = 2000;
 
 TimeSync.timeChecker = function() {
   var oldTime = TimeSync.timeChecker.oldTime || new Date(),
-      newTime = new Date(),
-      timeDiff = newTime - oldTime;
+      newTime = new Date();
   TimeSync.timeChecker.oldTime = newTime;
   // Five second tolerance
-  if (Math.abs(timeDiff) >= 5000 - timeCheckerInterval) {
+  if (Math.abs(newTime - oldTime - timeCheckerInterval) >= 5000) {
       TimeSync.resync();
   };
 };
@@ -85,6 +84,8 @@ TimeSync.handleChange = function (handleIt) {
   };
 
   if(handleIt){
+    //set the oldTime before we wait on the first interval to fire.
+    TimeSync.timeChecker.oldTime = new Date();
     //check for client time change
     handleChangeIntervalId = Meteor.setInterval(function (){
       TimeSync.timeChecker();
