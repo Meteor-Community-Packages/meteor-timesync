@@ -5,6 +5,9 @@ var roundTripTime = undefined;
 var offsetDep = new Deps.Dependency;
 var timeTick = new Deps.Dependency;
 
+var maxAttempts = 5;
+var attempts = 0;
+
 /*
   This is an approximation of
   http://en.wikipedia.org/wiki/Network_Time_Protocol
@@ -20,8 +23,15 @@ var updateOffset = function() {
     if (err) {
       //  We'll still use our last computed offset if is defined
       Meteor._debug("Error syncing to server time: " + err);
+      if (++attempts <= maxAttempts)
+        Meteor.setTimeout(TimeSync.resync, 1000);
+      else
+        Meteor._debug("Max number of time sync attempts reached. Giving up.");
       return undefined;
     }
+
+    attempts = 0; // It worked
+
     var ts = parseInt(response.content);
     offset = Math.round(((ts - t0) + (ts - t3)) / 2);
     roundTripTime = t3 - t0; // - (ts - ts) which is 0

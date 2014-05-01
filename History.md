@@ -1,6 +1,7 @@
-## vNEXT
+## v0.1.6
 
 - Added the optional `TimeSync.watchClockChanges` which can resync if a client's clock is detected to have significantly changed.
+- Added retry attempts to syncing, making it more robust over a hot code reload among other situations.
 
 ## v0.1.5
 
