@@ -1,3 +1,6 @@
+//IE8 doesn't have Date.now()
+Date.now = Date.now || function() { return +new Date; };
+
 TimeSync = {};
 
 var offset = undefined;
