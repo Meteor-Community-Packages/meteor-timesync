@@ -30,7 +30,7 @@ var updateOffset = function() {
         Meteor.setTimeout(TimeSync.resync, 1000);
       else
         Meteor._debug("Max number of time sync attempts reached. Giving up.");
-      return undefined;
+      return;
     }
 
     attempts = 0; // It worked
@@ -38,15 +38,18 @@ var updateOffset = function() {
     var ts = parseInt(response.content);
     offset = Math.round(((ts - t0) + (ts - t3)) / 2);
     roundTripTime = t3 - t0; // - (ts - ts) which is 0
-    return offsetDep.changed();
+    offsetDep.changed();
   });
 };
 
 // Reactive variable for server time that updates every second.
 TimeSync.serverTime = function(clientTime) {
-  if ( !TimeSync.isSynced() ) return undefined; // We don't know the server time.
-  if ( !clientTime ) timeTick.depend(); // We don't need to depend on the tick.
-  offsetDep.depend();
+  // If we don't know the offset, we can't provide the server time.
+  if ( !TimeSync.isSynced() ) return undefined;
+  // If a client time is provided, we don't need to depend on the tick.
+  if ( !clientTime ) timeTick.depend();
+
+  // offsetDep.depend(); implicit as we call isSynced()
   return (clientTime || Date.now()) + offset;
 };
 
@@ -84,7 +87,10 @@ function timeChecker() {
   var currentClientTime = Date.now();
   // Five second tolerance
   if (Math.abs(currentClientTime - prevClientTime - timeCheckerInterval) >= timeCheckerTolerance) {
-      TimeSync.resync();
+    // We're no longer in sync. Refuse to compute server time.
+    offset = undefined;
+    offsetDep.changed();
+    TimeSync.resync();
   }
   prevClientTime = currentClientTime;
 }
@@ -109,6 +115,6 @@ TimeSync.watchClockChanges = function (handleIt) {
 // Run this as soon as we load, even before Meteor.startup()
 TimeSync.resync();
 
-Meteor.setInterval((function() {
-  return timeTick.changed();
-}), 1000);
+Meteor.setInterval(function() {
+  timeTick.changed();
+}, 1000);

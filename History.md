@@ -1,3 +1,8 @@
+## vNEXT
+
+- Invalidate offset value and dependent time computations when we detect a clock change.
+- Added a `Date.now` shim for earlier versions of IE.
+
 ## v0.1.6
 
 - Added the optional `TimeSync.watchClockChanges` which can resync if a client's clock is detected to have significantly changed.
