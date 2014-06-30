@@ -3,10 +3,22 @@ Date.now = Date.now || function() { return +new Date; };
 
 TimeSync = {};
 
-var offset = undefined;
-var roundTripTime = undefined;
-var offsetDep = new Deps.Dependency;
-var timeTick = new Deps.Dependency;
+// Internal values, exported for testing
+SyncInternals = {
+  offset: undefined,
+  roundTripTime: undefined,
+  offsetDep: new Deps.Dependency(),
+  timeTick: new Deps.Dependency(),
+
+  timeCheck: function (lastTime, currentTime, interval, tolerance) {
+    if (Math.abs(currentTime - lastTime - interval) < tolerance) {
+      // Everything is A-OK
+      return true;
+    }
+    // We're no longer in sync.
+    return false;
+  }
+};
 
 var maxAttempts = 5;
 var attempts = 0;
@@ -36,9 +48,9 @@ var updateOffset = function() {
     attempts = 0; // It worked
 
     var ts = parseInt(response.content);
-    offset = Math.round(((ts - t0) + (ts - t3)) / 2);
-    roundTripTime = t3 - t0; // - (ts - ts) which is 0
-    offsetDep.changed();
+    SyncInternals.offset = Math.round(((ts - t0) + (ts - t3)) / 2);
+    SyncInternals.roundTripTime = t3 - t0; // - (ts - ts) which is 0
+    SyncInternals.offsetDep.changed();
   });
 };
 
@@ -47,26 +59,26 @@ TimeSync.serverTime = function(clientTime) {
   // If we don't know the offset, we can't provide the server time.
   if ( !TimeSync.isSynced() ) return undefined;
   // If a client time is provided, we don't need to depend on the tick.
-  if ( !clientTime ) timeTick.depend();
+  if ( !clientTime ) SyncInternals.timeTick.depend();
 
-  // offsetDep.depend(); implicit as we call isSynced()
-  return (clientTime || Date.now()) + offset;
+  // SyncInternals.offsetDep.depend(); implicit as we call isSynced()
+  return (clientTime || Date.now()) + SyncInternals.offset;
 };
 
 // Reactive variable for the difference between server and client time.
 TimeSync.serverOffset = function() {
-  offsetDep.depend();
-  return offset;
+  SyncInternals.offsetDep.depend();
+  return SyncInternals.offset;
 };
 
 TimeSync.roundTripTime = function() {
-  offsetDep.depend();
-  return roundTripTime;
+  SyncInternals.offsetDep.depend();
+  return SyncInternals.roundTripTime;
 };
 
 TimeSync.isSynced = function() {
-  offsetDep.depend();
-  return offset !== undefined;
+  SyncInternals.offsetDep.depend();
+  return SyncInternals.offset !== undefined;
 };
 
 var resyncIntervalId = null;
@@ -77,44 +89,35 @@ TimeSync.resync = function() {
   resyncIntervalId = Meteor.setInterval(updateOffset, 600000);
 };
 
-// resync on major client clock changes
-// based on http://stackoverflow.com/a/3367542/1656818
-var timeCheckerInterval = 2000;
-var timeCheckerTolerance = 1000; // Resync if unexpected change by more than one second
-var prevClientTime;
-
-function timeChecker() {
-  var currentClientTime = Date.now();
-  // Five second tolerance
-  if (Math.abs(currentClientTime - prevClientTime - timeCheckerInterval) >= timeCheckerTolerance) {
-    // We're no longer in sync. Refuse to compute server time.
-    offset = undefined;
-    offsetDep.changed();
-    TimeSync.resync();
-  }
-  prevClientTime = currentClientTime;
-}
-
-var watcherIntervalId = null;
-
-TimeSync.watchClockChanges = function (handleIt) {
-  // Clear any existing timer
-  if ( watcherIntervalId !== null ) {
-    Meteor.clearInterval(watcherIntervalId);
-    watcherIntervalId = null; // Because we may not set a new one
-  }
-
-  if( !handleIt ) return;
-
-  //set the oldTime before we wait on the first interval to fire.
-  prevClientTime = Date.now();
-  //check for client time change
-  watcherIntervalId = Meteor.setInterval(timeChecker, timeCheckerInterval);
+TimeSync.watchClockChanges = function () {
+  Meteor._debug("TimeSync.watchClockChanges() is deprecated; clock watching is now on by default.");
 };
 
 // Run this as soon as we load, even before Meteor.startup()
 TimeSync.resync();
 
+// resync on major client clock changes
+// based on http://stackoverflow.com/a/3367542/1656818
+var updateInterval = 1000;
+// Resync if unexpected change by more than one second
+var tickCheckTolerance = 1000;
+
+var lastClientTime = Date.now();
+
 Meteor.setInterval(function() {
-  timeTick.changed();
-}, 1000);
+  var currentClientTime = Date.now();
+
+  if ( SyncInternals.timeCheck(
+    lastClientTime, currentClientTime, updateInterval, tickCheckTolerance) ) {
+    SyncInternals.timeTick.changed();
+  }
+  else {
+    // Refuse to compute server time.
+    SyncInternals.offset = undefined;
+    SyncInternals.offsetDep.changed();
+    TimeSync.resync();
+  }
+
+  lastClientTime = currentClientTime;
+}, updateInterval);
+

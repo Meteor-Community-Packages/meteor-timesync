@@ -1,7 +1,9 @@
-## vNEXT
+## v0.2.0
 
+- Clock change watching is now on by default (it's very lightweight and only involves grabbing and checking a `Date`).
 - Invalidate offset value and dependent time computations when we detect a clock change.
 - Added a `Date.now` shim for earlier versions of IE.
+- Reorganized code for testing and added some basic tests.
 
 ## v0.1.6
 
