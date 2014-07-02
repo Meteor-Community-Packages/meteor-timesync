@@ -37,7 +37,7 @@ var updateOffset = function() {
     var t3 = Date.now(); // Grab this now
     if (err) {
       //  We'll still use our last computed offset if is defined
-      Meteor._debug("Error syncing to server time: " + err);
+      Meteor._debug("Error syncing to server time: ", err);
       if (++attempts <= maxAttempts)
         Meteor.setTimeout(TimeSync.resync, 1000);
       else
@@ -112,6 +112,7 @@ Meteor.setInterval(function() {
     SyncInternals.timeTick.changed();
   }
   else {
+    Meteor._debug("Clock discrepancy detected. Attempting re-sync.");
     // Refuse to compute server time.
     SyncInternals.offset = undefined;
     SyncInternals.offsetDep.changed();
