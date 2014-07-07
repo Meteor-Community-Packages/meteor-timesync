@@ -1,3 +1,8 @@
+## v0.2.1
+
+- Re-sync automatically after a reconnection.
+- Adjust clock watching tolerance so as to be less sensitive to heavy client CPU usage.
+
 ## v0.2.0
 
 - Clock change watching is now on by default (it's very lightweight and only involves grabbing and checking a `Date`).

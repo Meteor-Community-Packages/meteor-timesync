@@ -94,13 +94,23 @@ TimeSync.watchClockChanges = function () {
 };
 
 // Run this as soon as we load, even before Meteor.startup()
-TimeSync.resync();
+// Run again whenever we reconnect after losing connection
+var wasConnected = false;
+
+Deps.autorun(function() {
+  var connected = Meteor.status().connected;
+  if ( connected && !wasConnected ) TimeSync.resync();
+  wasConnected = connected;
+});
 
 // resync on major client clock changes
 // based on http://stackoverflow.com/a/3367542/1656818
 var updateInterval = 1000;
-// Resync if unexpected change by more than one second
-var tickCheckTolerance = 1000;
+
+// Resync if unexpected change by more than two seconds. This needs to be
+// somewhat lenient, or slow JS rendering can trigger a re-sync even when the
+// offset is still accurate.
+var tickCheckTolerance = 2000;
 
 var lastClientTime = Date.now();
 
