@@ -36,3 +36,27 @@ Tinytest.add("timesync - tick check - big jump", function(test) {
 /*
   TODO: add tests for proper dependencies in reactive functions
  */
+
+Tinytest.addAsync("timesync - basic - initial sync", function(test, next) {
+
+  function success() {
+    var syncedTime = TimeSync.serverTime();
+
+    // Make sure the time exists
+    test.isTrue(syncedTime);
+
+    // Make sure it's close to the current time on the client. This should
+    // always be true in PhantomJS tests where client/server are the same
+    // machine, although it might fail in development environments.
+    test.isTrue( Math.abs(syncedTime - Date.now()) < 1000 );
+
+    next();
+  }
+
+  function fail() {
+    test.fail();
+    next();
+  }
+
+  simplePoll(TimeSync.isSynced, success, fail, 5000, 100);
+});
