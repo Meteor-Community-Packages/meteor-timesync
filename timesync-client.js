@@ -107,10 +107,11 @@ Deps.autorun(function() {
 // based on http://stackoverflow.com/a/3367542/1656818
 var updateInterval = 1000;
 
-// Resync if unexpected change by more than two seconds. This needs to be
-// somewhat lenient, or slow JS rendering can trigger a re-sync even when the
-// offset is still accurate.
-var tickCheckTolerance = 2000;
+// Resync if unexpected change by more than a few seconds. This needs to be
+// somewhat lenient, or a CPU-intensive operation can trigger a re-sync even
+// when the offset is still accurate. In any case, we're not going to be able to
+// catch very small system-initiated NTP adjustments with this, anyway.
+var tickCheckTolerance = 5000;
 
 var lastClientTime = Date.now();
 
@@ -119,6 +120,7 @@ Meteor.setInterval(function() {
 
   if ( SyncInternals.timeCheck(
     lastClientTime, currentClientTime, updateInterval, tickCheckTolerance) ) {
+    // No problem here, just keep ticking along
     SyncInternals.timeTick.changed();
   }
   else {

@@ -1,3 +1,7 @@
+## vNEXT
+
+- Further adjust clock watching tolerance to be less sensitive to CPU.
+
 ## v0.2.1
 
 - Re-sync automatically after a reconnection.
