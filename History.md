@@ -1,5 +1,6 @@
-## vNEXT
+## v0.2.2
 
+- **Updated for Meteor 0.9.**
 - Further adjust clock watching tolerance to be less sensitive to CPU.
 
 ## v0.2.1

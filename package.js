@@ -1,8 +1,12 @@
 Package.describe({
-  summary: "NTP-style time synchronization between server and client"
+  summary: "NTP-style time synchronization between server and client",
+  version: "0.2.2",
+  git: "https://github.com/mizzao/meteor-timesync.git"
 });
 
-Package.on_use(function (api) {
+Package.onUse(function (api) {
+  api.versionsFrom("METEOR-CORE@0.9.0-atm");
+
   api.use(['deps', 'http'], 'client');
   api.use('webapp', 'server');
 
@@ -14,13 +18,13 @@ Package.on_use(function (api) {
   api.export('SyncInternals', 'client', {testOnly: true} );
 });
 
-Package.on_test(function (api) {
+Package.onTest(function (api) {
   api.use([
     'tinytest',
     'test-helpers'
   ]);
 
-  api.use('timesync');
+  api.use("mizzao:timesync");
 
   api.add_files('tests/client.js', 'client');
 });

@@ -1,9 +1,0 @@
-{
-    "name": "timesync",
-    "description": "NTP-style time synchronization between server and client",
-    "homepage": "https://github.com/mizzao/meteor-timesync",
-    "author": "Andrew Mao  (http://www.andrewmao.net)",
-    "version": "0.2.1",
-    "git": "https://github.com/mizzao/meteor-timesync.git",
-    "packages": {}
-}

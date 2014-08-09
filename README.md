@@ -12,7 +12,7 @@ There is a demo as part of the user-status app at http://user-status.meteor.com.
 ## Installation
 
 ```
-mrt add timesync
+meteor add mizzao:timesync
 ```
 
 ## Usage
