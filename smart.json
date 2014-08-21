@@ -5,7 +5,7 @@
     }
   },
   "meteor": {
-    "branch": "devel",
+    "tag": "release/GLASSER-TEST@1.0-cs1",
     "git": "https://github.com/meteor/meteor.git"
   }
 }
