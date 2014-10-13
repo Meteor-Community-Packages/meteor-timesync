@@ -1,7 +1,7 @@
 Package.describe({
   name: "mizzao:timesync",
   summary: "NTP-style time synchronization between server and client",
-  version: "0.2.2",
+  version: "0.2.3",
   git: "https://github.com/mizzao/meteor-timesync.git"
 });
 
@@ -15,7 +15,8 @@ Package.onUse(function (api) {
   api.add_files('timesync-server.js', 'server');
   api.add_files('timesync-client.js', 'client');
 
-  api.export('TimeSync', 'client');
+  api.export('TimeSync', client);
+  api.export('TimeSyncConfig');
   api.export('SyncInternals', 'client', {testOnly: true} );
 });
 
