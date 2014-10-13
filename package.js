@@ -15,7 +15,7 @@ Package.onUse(function (api) {
   api.add_files('timesync-server.js', 'server');
   api.add_files('timesync-client.js', 'client');
 
-  api.export('TimeSync', client);
+  api.export('TimeSync', 'client');
   api.export('TimeSyncConfig');
   api.export('SyncInternals', 'client', {testOnly: true} );
 });
