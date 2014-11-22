@@ -1,3 +1,7 @@
+## vNEXT
+
+- Explicitly set MIME type on timesync endpoint. (#17, #18)
+
 ## v0.2.2
 
 - **Updated for Meteor 0.9.**

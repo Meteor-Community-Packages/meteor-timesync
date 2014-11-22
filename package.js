@@ -6,14 +6,14 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("METEOR-CORE@0.9.0-atm");
+  api.versionsFrom("1.0");
 
   api.use(['deps', 'http'], 'client');
   api.use('webapp', 'server');
 
   // Our files
-  api.add_files('timesync-server.js', 'server');
-  api.add_files('timesync-client.js', 'client');
+  api.addFiles('timesync-server.js', 'server');
+  api.addFiles('timesync-client.js', 'client');
 
   api.export('TimeSync', 'client');
   api.export('SyncInternals', 'client', {testOnly: true} );
@@ -27,5 +27,5 @@ Package.onTest(function (api) {
 
   api.use("mizzao:timesync");
 
-  api.add_files('tests/client.js', 'client');
+  api.addFiles('tests/client.js', 'client');
 });
