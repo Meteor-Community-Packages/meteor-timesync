@@ -26,6 +26,18 @@ meteor add mizzao:timesync
 
 To use the above functions in a non-reactive context, use [`Deps.nonreactive`](http://docs.meteor.com/#deps_nonreactive). This is useful if you are displaying a lot of timestamps or differences on a page and you don't want them to be constantly recomputed on the client. However, displaying time reactively should be pretty efficient with Meteor 0.8.0+ (Blaze).
 
+## Customizing the HTTP endpoint name
+
+To change the base URL for the endpoints:
+
+*common.js*
+
+```js
+TimeSyncConfig.setBaseUrl('/ntp/sync');
+```
+
+Be sure that the resulting URL will not conflict with other resources.
+
 ## Notes
 
 - This library is a crude approximation of NTP, at the moment. It's empirically shown to be accurate to under 100 ms on the meteor.com servers.

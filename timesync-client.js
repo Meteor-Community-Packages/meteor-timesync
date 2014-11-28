@@ -2,6 +2,7 @@
 Date.now = Date.now || function() { return +new Date; };
 
 TimeSync = {};
+TimeSyncConfig = TimeSyncConfig || {};
 
 // Internal values, exported for testing
 SyncInternals = {
@@ -20,6 +21,16 @@ SyncInternals = {
   }
 };
 
+TimeSyncConfig = {
+  baseUrl: "/_timesync",
+  setBaseUrl: function (url) {
+    if (url && typeof(url) === string && url.charAt(0) === '/' && url.length > 2)
+      this.baseUrl = url;
+    else
+      console.warn("TimeSyncConfig: invalid base url.");
+  }
+};
+
 var maxAttempts = 5;
 var attempts = 0;
 
@@ -33,7 +44,7 @@ var attempts = 0;
 var updateOffset = function() {
   var t0;
   t0 = Date.now();
-  HTTP.get("/_timesync", function(err, response) {
+  HTTP.get(TimeSyncConfig.baseUrl, function(err, response) {
     var t3 = Date.now(); // Grab this now
     if (err) {
       //  We'll still use our last computed offset if is defined
