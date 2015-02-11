@@ -1,14 +1,24 @@
 //IE8 doesn't have Date.now()
 Date.now = Date.now || function() { return +new Date; };
 
-TimeSync = {};
+TimeSync = {
+  loggingEnabled: true
+};
+
+function log(/* arguments */) {
+  if (TimeSync.loggingEnabled) {
+    Meteor._debug.apply(this, arguments);
+  }
+}
+
+var defaultInterval = 1000;
 
 // Internal values, exported for testing
 SyncInternals = {
   offset: undefined,
   roundTripTime: undefined,
   offsetDep: new Deps.Dependency(),
-  timeTick: new Deps.Dependency(),
+  timeTick: {},
 
   timeCheck: function (lastTime, currentTime, interval, tolerance) {
     if (Math.abs(currentTime - lastTime - interval) < tolerance) {
@@ -19,6 +29,8 @@ SyncInternals = {
     return false;
   }
 };
+
+SyncInternals.timeTick[defaultInterval] = new Deps.Dependency();
 
 var maxAttempts = 5;
 var attempts = 0;
@@ -37,11 +49,11 @@ var updateOffset = function() {
     var t3 = Date.now(); // Grab this now
     if (err) {
       //  We'll still use our last computed offset if is defined
-      Meteor._debug("Error syncing to server time: ", err);
+      log("Error syncing to server time: ", err);
       if (++attempts <= maxAttempts)
         Meteor.setTimeout(TimeSync.resync, 1000);
       else
-        Meteor._debug("Max number of time sync attempts reached. Giving up.");
+        log("Max number of time sync attempts reached. Giving up.");
       return;
     }
 
@@ -55,11 +67,12 @@ var updateOffset = function() {
 };
 
 // Reactive variable for server time that updates every second.
-TimeSync.serverTime = function(clientTime) {
+TimeSync.serverTime = function(clientTime, interval) {
+  check(interval, Match.Optional(Match.Integer));
   // If we don't know the offset, we can't provide the server time.
   if ( !TimeSync.isSynced() ) return undefined;
   // If a client time is provided, we don't need to depend on the tick.
-  if ( !clientTime ) SyncInternals.timeTick.depend();
+  if ( !clientTime ) getTickDependency(interval || defaultInterval).depend();
 
   // SyncInternals.offsetDep.depend(); implicit as we call isSynced()
   return (clientTime || Date.now()) + SyncInternals.offset;
@@ -89,10 +102,6 @@ TimeSync.resync = function() {
   resyncIntervalId = Meteor.setInterval(updateOffset, 600000);
 };
 
-TimeSync.watchClockChanges = function () {
-  Meteor._debug("TimeSync.watchClockChanges() is deprecated; clock watching is now on by default.");
-};
-
 // Run this as soon as we load, even before Meteor.startup()
 // Run again whenever we reconnect after losing connection
 var wasConnected = false;
@@ -103,10 +112,6 @@ Deps.autorun(function() {
   wasConnected = connected;
 });
 
-// resync on major client clock changes
-// based on http://stackoverflow.com/a/3367542/1656818
-var updateInterval = 1000;
-
 // Resync if unexpected change by more than a few seconds. This needs to be
 // somewhat lenient, or a CPU-intensive operation can trigger a re-sync even
 // when the offset is still accurate. In any case, we're not going to be able to
@@ -115,16 +120,35 @@ var tickCheckTolerance = 5000;
 
 var lastClientTime = Date.now();
 
+// Set up a new interval for any amount of reactivity.
+function getTickDependency(interval) {
+
+  if ( !SyncInternals.timeTick[interval] ) {
+    var dep  = new Deps.Dependency();
+
+    Meteor.setInterval(function() {
+      dep.changed();
+    }, interval);
+
+    SyncInternals.timeTick[interval] = dep;
+  }
+
+  return SyncInternals.timeTick[interval];
+}
+
+// Set up special interval for the default tick, which also watches for re-sync
 Meteor.setInterval(function() {
   var currentClientTime = Date.now();
 
   if ( SyncInternals.timeCheck(
-    lastClientTime, currentClientTime, updateInterval, tickCheckTolerance) ) {
+    lastClientTime, currentClientTime, defaultInterval, tickCheckTolerance) ) {
     // No problem here, just keep ticking along
-    SyncInternals.timeTick.changed();
+    SyncInternals.timeTick[defaultInterval].changed();
   }
   else {
-    Meteor._debug("Clock discrepancy detected. Attempting re-sync.");
+    // resync on major client clock changes
+    // based on http://stackoverflow.com/a/3367542/1656818
+    log("Clock discrepancy detected. Attempting re-sync.");
     // Refuse to compute server time.
     SyncInternals.offset = undefined;
     SyncInternals.offsetDep.changed();
@@ -132,5 +156,5 @@ Meteor.setInterval(function() {
   }
 
   lastClientTime = currentClientTime;
-}, updateInterval);
+}, defaultInterval);
 

@@ -17,7 +17,7 @@ meteor add mizzao:timesync
 
 ## Usage
 
-- `TimeSync.serverTime(clientTime)`: returns the server time for a given client time. A reactive variable which changes with the computed offset. If `clientTime` is omitted, returns the current time on the server, reactively updating every second.
+- `TimeSync.serverTime(clientTime, updateInterval)`: returns the server time for a given client time. A reactive variable which changes with the computed offset, and updates continually. Pass in `clientTime` optionally to specify a particular time on the client, or `updateInterval` to change the rate at which the reactive variable updates.
 - `TimeSync.serverOffset()`: returns the current time difference between the server and the client. Reactively updates as the offset is recomputed.
 - `TimeSync.roundTripTime()`: The round trip ping to the server. Also reactive.
 - `TimeSync.isSynced()`: Reactive variable that determines if an initial sync has taken place.
@@ -25,6 +25,8 @@ meteor add mizzao:timesync
 - `TimeSync.watchClockChanges(boolean)`: Call this with `true` to turn on watching for major client-side clock changes, which will trigger a re-sync. Call it with `false` to turn off. This is opt-in; defaults to off.
 
 To use the above functions in a non-reactive context, use [`Deps.nonreactive`](http://docs.meteor.com/#deps_nonreactive). This is useful if you are displaying a lot of timestamps or differences on a page and you don't want them to be constantly recomputed on the client. However, displaying time reactively should be pretty efficient with Meteor 0.8.0+ (Blaze).
+
+You can also use something like `TimeSync.serverTime(null, 5000)` to get a reactive time value that only updates at 5 second intervals. All reactive time variables with the same value of `updateInterval` are guaranteed to be invalidated at the same time.
 
 ## Notes
 

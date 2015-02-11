@@ -47,7 +47,8 @@ Tinytest.addAsync("timesync - basic - initial sync", function(test, next) {
 
     // Make sure it's close to the current time on the client. This should
     // always be true in PhantomJS tests where client/server are the same
-    // machine, although it might fail in development environments.
+    // machine, although it might fail in development environments, for example
+    // when the server and client are different VMs.
     test.isTrue( Math.abs(syncedTime - Date.now()) < 1000 );
 
     next();
@@ -59,4 +60,47 @@ Tinytest.addAsync("timesync - basic - initial sync", function(test, next) {
   }
 
   simplePoll(TimeSync.isSynced, success, fail, 5000, 100);
+});
+
+Tinytest.addAsync("timesync - basic - different sync intervals", function(test, next) {
+
+  var aCount = 0, bCount = 0, cCount = 0;
+
+  var a = Tracker.autorun(function () {
+    TimeSync.serverTime(null, 500);
+    aCount++;
+  });
+
+  var b = Tracker.autorun(function () {
+    TimeSync.serverTime();
+    bCount++;
+  });
+
+  var c = Tracker.autorun(function () {
+    TimeSync.serverTime(null, 2000);
+    cCount++;
+  });
+
+  var testInterval = 5000;
+
+  Meteor.setTimeout(function() {
+
+    test.equal(aCount, 10); // 0, 500, 1000, 1500 ...
+    // not going to be 5 since the first tick won't generate this dep
+    test.equal(bCount, 6);
+    test.equal(cCount, 3); // 0, 2000, 4000
+
+    test.isTrue(SyncInternals.timeTick[500]);
+    test.isTrue(SyncInternals.timeTick[1000]);
+    test.isTrue(SyncInternals.timeTick[2000]);
+
+    test.equal(Object.keys(SyncInternals.timeTick).length, 3);
+
+    a.stop();
+    b.stop();
+    c.stop();
+
+    next()
+  }, testInterval);
+
 });

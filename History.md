@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.3.0
+
+- `TimeSync.serverTime` now supports an optional second `updateInterval` argument, causing the reactive value to update less frequently. (#10)
+- `TimeSync.loggingEnabled` can be now set to false to suppress client log output. (#21)
 - Explicitly set MIME type on timesync endpoint. (#17, #18)
 
 ## v0.2.2
