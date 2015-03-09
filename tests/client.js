@@ -62,6 +62,21 @@ Tinytest.addAsync("timesync - basic - initial sync", function(test, next) {
   simplePoll(TimeSync.isSynced, success, fail, 5000, 100);
 });
 
+Tinytest.addAsync("timesync - basic - serverTime format", function(test, next) {
+
+  test.isTrue(_.isNumber( TimeSync.serverTime() ));
+
+  test.isTrue(_.isNumber( TimeSync.serverTime(null) ));
+
+  // Accept Date as client time
+  test.isTrue(_.isNumber( TimeSync.serverTime(new Date()) ));
+
+  // Accept epoch as client time
+  test.isTrue(_.isNumber( TimeSync.serverTime(Date.now()) ));
+
+  next();
+});
+
 Tinytest.addAsync("timesync - basic - different sync intervals", function(test, next) {
 
   var aCount = 0, bCount = 0, cCount = 0;

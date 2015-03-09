@@ -17,7 +17,7 @@ meteor add mizzao:timesync
 
 ## Usage
 
-- `TimeSync.serverTime(clientTime, updateInterval)`: returns the server time for a given client time. A reactive variable which changes with the computed offset, and updates continually. Pass in `clientTime` optionally to specify a particular time on the client, instead of reactively depending on the current time. Pass in `updateInterval` to change the rate (in milliseconds) at which the reactive variable updates; the default value is 1000 (1 second).
+- `TimeSync.serverTime(clientTime, updateInterval)`: returns the server time for a given client time, as a UTC/Unix timestamp. A reactive variable which changes with the computed offset, and updates continually. Pass in `clientTime` optionally to specify a particular time on the client, instead of reactively depending on the current time. Pass in `updateInterval` to change the rate (in milliseconds) at which the reactive variable updates; the default value is 1000 (1 second).
 - `TimeSync.serverOffset()`: returns the current time difference between the server and the client. Reactively updates as the offset is recomputed.
 - `TimeSync.roundTripTime()`: The round trip ping to the server. Also reactive.
 - `TimeSync.isSynced()`: Reactive variable that determines if an initial sync has taken place.
@@ -26,6 +26,8 @@ meteor add mizzao:timesync
 - `TimeSync.loggingEnabled`: defaults to `true`, set this to `false` to suppress diagnostic syncing messages on the client.
 
 To use the above functions in a non-reactive context, use [`Deps.nonreactive`](http://docs.meteor.com/#deps_nonreactive). This is useful if you are displaying a lot of timestamps or differences on a page and you don't want them to be constantly recomputed on the client. However, displaying time reactively should be pretty efficient with Meteor 0.8.0+ (Blaze).
+
+Note that `TimeSync.serverTime` returns a timestamp, not a `Date`, but you can easily construct a date with `new Date(TimeSync.serverTime(...))`.
 
 You can also use something like `TimeSync.serverTime(null, 5000)` to get a reactive time value that only updates at 5 second intervals. All reactive time variables with the same value of `updateInterval` are guaranteed to be invalidated at the same time.
 

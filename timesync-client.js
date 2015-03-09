@@ -75,7 +75,8 @@ TimeSync.serverTime = function(clientTime, interval) {
   if ( !clientTime ) getTickDependency(interval || defaultInterval).depend();
 
   // SyncInternals.offsetDep.depend(); implicit as we call isSynced()
-  return (clientTime || Date.now()) + SyncInternals.offset;
+  // Convert Date argument to epoch as necessary
+  return (+clientTime || Date.now()) + SyncInternals.offset;
 };
 
 // Reactive variable for the difference between server and client time.

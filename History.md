@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.3.1
+
+- Fix an issue where `TimeSync.serverTime` returned an erroneous value when passed a `Date` (instead of an epoch). (#23)
+
 ## v0.3.0
 
 - `TimeSync.serverTime` now supports an optional second `updateInterval` argument, causing the reactive value to update less frequently. (#10)
