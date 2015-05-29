@@ -45,7 +45,15 @@ var attempts = 0;
 var updateOffset = function() {
   var t0;
   t0 = Date.now();
-  HTTP.get("/_timesync", function(err, response) {
+
+  // Cordova apps need special treatment, because the phone will
+  // have a local server and we need it to connect to the remote
+  // server. Luckily ROOT_URL points to the corrent place.
+  var rootUrl = ''
+  if (Meteor.isCordova)
+    rootUrl = __meteor_runtime_config__.ROOT_URL
+
+  HTTP.get(rootUrl + "/_timesync", function(err, response) {
     var t3 = Date.now(); // Grab this now
     if (err) {
       //  We'll still use our last computed offset if is defined
