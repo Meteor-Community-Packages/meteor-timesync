@@ -8,6 +8,7 @@ WebApp.rawConnectHandlers.use("/_timesync",
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", 0);
+    res.setHeader("Access-Control-Allow-Origin", "*");
 
     // Avoid MIME type warnings in browsers
     res.setHeader("Content-Type", "text/plain");
