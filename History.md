@@ -1,5 +1,9 @@
 ## vNEXT
 
+## vNEXT
+
+- Fix issue when used in Cordova. (#22, #26, #27, #28)
+
 ## v0.3.1
 
 - Fix an issue where `TimeSync.serverTime` returned an erroneous value when passed a `Date` (instead of an epoch). (#23)

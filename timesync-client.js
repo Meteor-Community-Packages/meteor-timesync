@@ -43,17 +43,9 @@ var attempts = 0;
   we should try taking multiple measurements.
  */
 var updateOffset = function() {
-  var t0,
-    url = "/_timesync",
-    root = __meteor_runtime_config__.ROOT_URL;
-  // Use absolute URL in Cordova
-  if (Meteor.isCordova) {
-    if (root[root.length - 1] === '/' ) {
-      root = root.substring(0, root.length - 1);
-    }
-    url = root + url;
-  }
-  t0 = Date.now();
+  var url = Meteor.absoluteUrl("_timesync");
+  var t0 = Date.now();
+
   HTTP.get(url, function(err, response) {
     var t3 = Date.now(); // Grab this now
     if (err) {
