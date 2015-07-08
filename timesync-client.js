@@ -44,6 +44,12 @@ var attempts = 0;
  */
 var updateOffset = function() {
   var url = Meteor.absoluteUrl("_timesync");
+  // In development, just don't use a fully qualified path:
+  // https://github.com/meteor/meteor/issues/4696
+  if ( url.indexOf("localhost") != -1 ) {
+    url = "/_timesync";
+  }
+
   var t0 = Date.now();
 
   HTTP.get(url, function(err, response) {

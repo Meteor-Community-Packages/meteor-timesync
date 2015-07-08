@@ -1,8 +1,8 @@
 ## vNEXT
 
-## vNEXT
+## v0.3.2
 
-- Fix issue when used in Cordova. (#22, #26, #27, #28)
+- Fix issue when used in Cordova. (#22, #26, #27)
 
 ## v0.3.1
 
