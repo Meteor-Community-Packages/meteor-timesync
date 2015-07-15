@@ -1,7 +1,8 @@
-meteor-timesync
+meteor-timesync [![Build Status](https://travis-ci.org/mizzao/meteor-timesync.svg)](https://travis-ci.org/mizzao/meteor-timesync)
 ===============
 
-NTP-style time synchronization between server and client.
+NTP-style time synchronization between server and client, and facilities to 
+use server time reactively in Meteor applications.
 
 ## What's this do?
 
