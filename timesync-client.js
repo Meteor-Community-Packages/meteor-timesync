@@ -42,17 +42,19 @@ var attempts = 0;
   If this turns out to be more accurate under the connect handlers,
   we should try taking multiple measurements.
  */
-var updateOffset = function() {
-  var url = Meteor.absoluteUrl("_timesync");
-  // In development, just don't use a fully qualified path:
-  // https://github.com/meteor/meteor/issues/4696
-  if ( url.indexOf("localhost") != -1 ) {
-    url = "/_timesync";
-  }
 
+// Only use Meteor.absoluteUrl for Cordova; see
+// https://github.com/meteor/meteor/issues/4696
+// https://github.com/mizzao/meteor-timesync/issues/30
+var syncUrl = "/_timesync";
+if (Meteor.isCordova) {
+  syncUrl = Meteor.absoluteUrl("_timesync");
+}
+
+var updateOffset = function() {
   var t0 = Date.now();
 
-  HTTP.get(url, function(err, response) {
+  HTTP.get(syncUrl, function(err, response) {
     var t3 = Date.now(); // Grab this now
     if (err) {
       //  We'll still use our last computed offset if is defined

@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.3.3
+
+- Be more robust with sync url when outside of Cordova. (#30) 
+
 ## v0.3.2
 
 - Fix issue when used in Cordova. (#22, #26, #27)
