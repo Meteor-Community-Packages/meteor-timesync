@@ -6,9 +6,14 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("1.1.0.2");
+  api.versionsFrom("1.2.0.1");
 
-  api.use(['deps', 'http'], 'client');
+  api.use([
+    'check',
+    'tracker',
+    'http'
+  ], 'client');
+
   api.use('webapp', 'server');
 
   // Our files

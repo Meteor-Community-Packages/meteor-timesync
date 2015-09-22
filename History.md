@@ -1,5 +1,7 @@
 ## vNEXT
 
+- Explicitly pull in client-side `check` for Meteor 1.2 apps. 
+
 ## v0.3.3
 
 - Be more robust with sync url when outside of Cordova. (#30) 
