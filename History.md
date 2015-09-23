@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.3.4
+
 - Explicitly pull in client-side `check` for Meteor 1.2 apps. 
 
 ## v0.3.3
