@@ -23,7 +23,6 @@ meteor add mizzao:timesync
 - `TimeSync.roundTripTime()`: The round trip ping to the server. Also reactive.
 - `TimeSync.isSynced()`: Reactive variable that determines if an initial sync has taken place.
 - `TimeSync.resync()`: Re-triggers a sync with the server. Can be useful because the initial sync often takes place during a lot of traffic with the server and could be less accurate.
-- `TimeSync.watchClockChanges(boolean)`: Call this with `true` to turn on watching for major client-side clock changes, which will trigger a re-sync. Call it with `false` to turn off. This is opt-in; defaults to off.
 - `TimeSync.loggingEnabled`: defaults to `true`, set this to `false` to suppress diagnostic syncing messages on the client.
 
 To use the above functions in a non-reactive context, use [`Deps.nonreactive`](http://docs.meteor.com/#deps_nonreactive). This is useful if you are displaying a lot of timestamps or differences on a page and you don't want them to be constantly recomputed on the client. However, displaying time reactively should be pretty efficient with Meteor 0.8.0+ (Blaze).
