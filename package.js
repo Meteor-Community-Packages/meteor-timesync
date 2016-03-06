@@ -11,7 +11,8 @@ Package.onUse(function (api) {
   api.use([
     'check',
     'tracker',
-    'http'
+    'http',
+    'ddp'
   ], 'client');
 
   api.use('webapp', 'server');
