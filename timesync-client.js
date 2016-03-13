@@ -46,9 +46,10 @@ var attempts = 0;
 // Only use Meteor.absoluteUrl for Cordova; see
 // https://github.com/meteor/meteor/issues/4696
 // https://github.com/mizzao/meteor-timesync/issues/30
-var syncUrl = "/_timesync";
+var _basePath = __meteor_runtime_config__.ROOT_URL_PATH_PREFIX || '';
+var syncUrl = _basePath + "/_timesync";
 if (Meteor.isCordova) {
-  syncUrl = Meteor.absoluteUrl("_timesync");
+  syncUrl = Meteor.absoluteUrl(_basePath + "_timesync");
 }
 
 var updateOffset = function() {
