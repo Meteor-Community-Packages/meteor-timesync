@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.4.0
+
+- Update CORS headers to support Meteor 1.3. (#37, #41)
+
 ## v0.3.4
 
 - Explicitly pull in client-side `check` for Meteor 1.2 apps. 
