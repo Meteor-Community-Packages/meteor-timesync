@@ -43,12 +43,19 @@ var attempts = 0;
   we should try taking multiple measurements.
  */
 
-// Only use Meteor.absoluteUrl for Cordova; see
-// https://github.com/meteor/meteor/issues/4696
-// https://github.com/mizzao/meteor-timesync/issues/30
-var syncUrl = "/_timesync";
+var syncUrl;
 if (Meteor.isCordova) {
+  // Only use Meteor.absoluteUrl for Cordova; see
+  // https://github.com/meteor/meteor/issues/4696
+  // https://github.com/mizzao/meteor-timesync/issues/30
+  // Cordova should never be running out of a subdirectory...
   syncUrl = Meteor.absoluteUrl("_timesync");
+}
+else {
+  // Support Meteor running in relative paths, based on computed root url prefix
+  // https://github.com/mizzao/meteor-timesync/pull/40
+  const basePath = __meteor_runtime_config__.ROOT_URL_PATH_PREFIX || '';
+  syncUrl = basePath + "/_timesync";
 }
 
 var updateOffset = function() {

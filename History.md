@@ -3,6 +3,7 @@
 ## v0.4.0
 
 - Update CORS headers to support Meteor 1.3. (#37, #41)
+- Support Meteor apps running in sub-paths instead of at root level. (#36, #40)
 
 ## v0.3.4
 

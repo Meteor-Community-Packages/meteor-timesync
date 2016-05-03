@@ -16,6 +16,8 @@ Package.onUse(function (api) {
 
   api.use('webapp', 'server');
 
+  api.use('ecmascript');
+
   // Our files
   api.addFiles('timesync-server.js', 'server');
   api.addFiles('timesync-client.js', 'client');
