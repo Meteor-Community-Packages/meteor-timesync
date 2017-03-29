@@ -19,14 +19,8 @@ SyncInternals = {
   roundTripTime: undefined,
   offsetDep: new Deps.Dependency(),
   timeTick: {},
-
-  timeCheck: function (lastTime, currentTime, interval, tolerance) {
-    if (Math.abs(currentTime - lastTime - interval) < tolerance) {
-      // Everything is A-OK
-      return true;
-    }
-    // We're no longer in sync.
-    return false;
+  getDiscrepancy: function (lastTime, currentTime, interval) {
+    return currentTime - (lastTime + interval)
   }
 };
 
@@ -157,21 +151,19 @@ function getTickDependency(interval) {
 Meteor.setInterval(function() {
   var currentClientTime = Date.now();
 
-  if ( SyncInternals.timeCheck(
-    lastClientTime, currentClientTime, defaultInterval, tickCheckTolerance) ) {
+  var discrepancy = SyncInternals.getDiscrepancy(lastClientTime, currentClientTime, defaultInterval);
+  if (discrepancy < tickCheckTolerance) {
     // No problem here, just keep ticking along
     SyncInternals.timeTick[defaultInterval].changed();
-  }
-  else {
+  } else {
     // resync on major client clock changes
     // based on http://stackoverflow.com/a/3367542/1656818
     log("Clock discrepancy detected. Attempting re-sync.");
-    // Refuse to compute server time.
-    SyncInternals.offset = undefined;
+    // Refuse to compute server time and try to guess new server offset. Guessing only works if the server time hasn't changed.
+    SyncInternals.offset = SyncInternals.offset - discrepancy;
     SyncInternals.offsetDep.changed();
     TimeSync.resync();
   }
 
   lastClientTime = currentClientTime;
 }, defaultInterval);
-

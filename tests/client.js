@@ -2,35 +2,32 @@ Tinytest.add("timesync - tick check - normal tick", function(test) {
   var lastTime = 5000;
   var currentTime = 6000;
   var interval = 1000;
-  var tolerance = 1000;
 
-  test.equal(SyncInternals.timeCheck(lastTime, currentTime, interval, tolerance), true);
+  test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), 0);
 });
 
 Tinytest.add("timesync - tick check - slightly off", function(test) {
   var lastTime = 5000;
   var currentTime = 6500;
   var interval = 1000;
-  var tolerance = 1000;
 
-  test.equal(SyncInternals.timeCheck(lastTime, currentTime, interval, tolerance), true);
+  test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), 500);
 
   currentTime = 5500;
 
-  test.equal(SyncInternals.timeCheck(lastTime, currentTime, interval, tolerance), true);
+  test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), -500);
 });
 
 Tinytest.add("timesync - tick check - big jump", function(test) {
   var lastTime = 5000;
   var currentTime = 0;
   var interval = 1000;
-  var tolerance = 1000;
 
-  test.equal(SyncInternals.timeCheck(lastTime, currentTime, interval, tolerance), false);
+  test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), -6000);
 
   currentTime = 10000;
 
-  test.equal(SyncInternals.timeCheck(lastTime, currentTime, interval, tolerance), false);
+  test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), 4000);
 });
 
 /*
