@@ -152,7 +152,7 @@ Meteor.setInterval(function() {
   var currentClientTime = Date.now();
 
   var discrepancy = SyncInternals.getDiscrepancy(lastClientTime, currentClientTime, defaultInterval);
-  if (discrepancy < tickCheckTolerance) {
+  if (Math.abs(discrepancy) < tickCheckTolerance) {
     // No problem here, just keep ticking along
     SyncInternals.timeTick[defaultInterval].changed();
   } else {
