@@ -93,7 +93,7 @@ Tinytest.addAsync("timesync - basic - different sync intervals", function(test, 
     cCount++;
   });
 
-  var testInterval = 5000;
+  var testInterval = 4990;
 
   Meteor.setTimeout(function() {
 
