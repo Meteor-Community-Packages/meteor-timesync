@@ -18,6 +18,8 @@ SyncInternals = {
   offset: undefined,
   roundTripTime: undefined,
   offsetDep: new Deps.Dependency(),
+  syncDep: new Deps.Dependency(),
+  isSynced: false,
   timeTick: {},
   getDiscrepancy: function (lastTime, currentTime, interval) {
     return currentTime - (lastTime + interval)
@@ -70,6 +72,7 @@ var updateOffset = function() {
     attempts = 0; // It worked
 
     var ts = parseInt(response.content);
+    SyncInternals.isSynced = true;
     SyncInternals.offset = Math.round(((ts - t0) + (ts - t3)) / 2);
     SyncInternals.roundTripTime = t3 - t0; // - (ts - ts) which is 0
     SyncInternals.offsetDep.changed();
@@ -79,12 +82,10 @@ var updateOffset = function() {
 // Reactive variable for server time that updates every second.
 TimeSync.serverTime = function(clientTime, interval) {
   check(interval, Match.Optional(Match.Integer));
-  // If we don't know the offset, we can't provide the server time.
-  if ( !TimeSync.isSynced() ) return undefined;
   // If a client time is provided, we don't need to depend on the tick.
   if ( !clientTime ) getTickDependency(interval || defaultInterval).depend();
 
-  // SyncInternals.offsetDep.depend(); implicit as we call isSynced()
+  SyncInternals.offsetDep.depend(); // depend on offset to enable reactivity
   // Convert Date argument to epoch as necessary
   return (+clientTime || Date.now()) + SyncInternals.offset;
 };
@@ -102,7 +103,7 @@ TimeSync.roundTripTime = function() {
 
 TimeSync.isSynced = function() {
   SyncInternals.offsetDep.depend();
-  return SyncInternals.offset !== undefined;
+  return SyncInternals.isSynced;
 };
 
 var resyncIntervalId = null;
@@ -161,6 +162,7 @@ Meteor.setInterval(function() {
     log("Clock discrepancy detected. Attempting re-sync.");
     // Refuse to compute server time and try to guess new server offset. Guessing only works if the server time hasn't changed.
     SyncInternals.offset = SyncInternals.offset - discrepancy;
+    SyncInternals.isSynced = false;
     SyncInternals.offsetDep.changed();
     TimeSync.resync();
   }
