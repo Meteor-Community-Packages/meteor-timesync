@@ -1,5 +1,7 @@
 ## vNEXT
 
+- guess new offset instead of unsetting if the client time has changed. This prevents that `TimeSync.serverTime` returns `undefined` after the time has changed and the client isn't in sync with the server.
+
 ## v0.4.0
 
 - Update CORS headers to support Meteor 1.3. (#37, #41)
