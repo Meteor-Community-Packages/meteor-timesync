@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.5.1
+
+- Fix an issue where `TimeSync.ServerTime` returned NaN when executed in meteor-desktop.
+
 ## v0.5.0
 
 - guess new offset instead of unsetting if the client time has changed. This prevents that `TimeSync.serverTime` returns `undefined` after the time has changed and the client isn't in sync with the server.
