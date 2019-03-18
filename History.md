@@ -1,5 +1,12 @@
 ## vNEXT
 
+## v0.6.0
+
+- Code Format Refactor
+- Bumped minimum package API version to Meteor 1.3 (to support Tracker)
+- Changed Deps to Tracker (#49)
+- Only show log output in development
+
 ## v0.5.1
 
 - Fix an issue where `TimeSync.ServerTime` returned NaN when executed in meteor-desktop.
@@ -15,11 +22,11 @@
 
 ## v0.3.4
 
-- Explicitly pull in client-side `check` for Meteor 1.2 apps. 
+- Explicitly pull in client-side `check` for Meteor 1.2 apps.
 
 ## v0.3.3
 
-- Be more robust with sync url when outside of Cordova. (#30) 
+- Be more robust with sync url when outside of Cordova. (#30)
 
 ## v0.3.2
 
