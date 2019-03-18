@@ -1,7 +1,7 @@
 Package.describe({
   name: "mizzao:timesync",
   summary: "NTP-style time synchronization between server and client",
-  version: "0.5.0",
+  version: "0.5.1",
   git: "https://github.com/mizzao/meteor-timesync.git"
 });
 

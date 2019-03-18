@@ -40,8 +40,8 @@ var attempts = 0;
  */
 
 var syncUrl;
-if (Meteor.isCordova) {
-  // Only use Meteor.absoluteUrl for Cordova; see
+if (Meteor.isCordova || Meteor.isDesktop) {
+  // Only use Meteor.absoluteUrl for Cordova and Desktop; see
   // https://github.com/meteor/meteor/issues/4696
   // https://github.com/mizzao/meteor-timesync/issues/30
   // Cordova should never be running out of a subdirectory...
