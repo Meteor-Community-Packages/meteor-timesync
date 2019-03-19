@@ -35,7 +35,7 @@ Package.onTest(function (api) {
     'test-helpers'
   ]);
 
-  api.use(['tracker'], 'client');
+  api.use(['tracker', 'underscore'], 'client');
 
   api.use('mizzao:timesync');
 

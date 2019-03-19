@@ -1,3 +1,7 @@
+import { Meteor } from 'meteor/meteor';
+import { Tracker } from 'meteor/tracker';
+import { HTTP } from 'meteor/http';
+
 Tinytest.add("timesync - tick check - normal tick", function (test) {
   var lastTime = 5000;
   var currentTime = 6000;
@@ -117,4 +121,40 @@ Tinytest.addAsync("timesync - basic - different sync intervals", function (test,
     next()
   }, testInterval);
 
+});
+
+Tinytest.addAsync("timesync - basic - DDP timeSync", function (test, next) {
+  Meteor.call('_timeSync', function (err, res) {
+    if (err) {
+      test.fail();
+      next();
+    }
+    test.isTrue(_.isNumber(res));
+
+    // Make sure it's close to the current time on the client. This should
+    // always be true in PhantomJS tests where client/server are the same
+    // machine, although it might fail in development environments, for example
+    // when the server and client are different VMs.
+    test.isTrue(Math.abs(res - Date.now()) < 1000);
+
+    next();
+  });
+});
+
+Tinytest.addAsync("timesync - basic - HTTP timeSync", function (test, next) {
+  var syncUrl = TimeSync.getSyncUrl();
+
+  test.isNotNull(syncUrl);
+
+  HTTP.get(syncUrl, function (err, res) {
+    if (err) {
+      test.fail();
+      next();
+    }
+    test.isTrue(res.content);
+    var serverTime = parseInt(res.content,10);
+    test.isTrue(_.isNumber(serverTime));
+    test.isTrue(Math.abs(serverTime - Date.now()) < 1000);
+    next();
+  });
 });

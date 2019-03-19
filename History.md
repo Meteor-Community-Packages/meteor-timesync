@@ -5,7 +5,14 @@
 - Code Format Refactor
 - Bumped minimum package API version to Meteor 1.3 (to support Tracker)
 - Changed Deps to Tracker (#49)
-- Only show log output in development
+- Only show log output if running in development
+- Added _timeSync Meteor Method for doing timesync over DDP instead of HTTP
+- Auto switch to DDP after initial HTTP timesync to improve subsequent round trip times
+- Added option TimeSync.forceDDP to always use DDP, even for first sync (which may be slow!)
+- Shortened resync interval from 1 minute to 30 seconds when using DDP.
+- Added tests for DDP and HTTP sync
+- Added option to set the timesync URL using `TimeSync.setSyncUrl`
+- ... more to come, v0.6.0 is a work in progress!
 
 ## v0.5.1
 

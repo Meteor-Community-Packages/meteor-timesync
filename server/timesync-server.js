@@ -1,3 +1,5 @@
+import { Meteor } from "meteor/meteor";
+
 // Use rawConnectHandlers so we get a response as quickly as possible
 // https://github.com/meteor/meteor/blob/devel/packages/webapp/webapp_server.js
 
@@ -27,3 +29,10 @@ WebApp.rawConnectHandlers.use('/_timesync',
     res.end(Date.now().toString());
   }
 );
+
+Meteor.methods({
+  _timeSync: function () {
+    this.unblock();
+    return Date.now();
+  }
+});

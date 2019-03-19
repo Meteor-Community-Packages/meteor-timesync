@@ -8,7 +8,8 @@ Date.now = Date.now || function () {
 };
 
 TimeSync = {
-  loggingEnabled: Meteor.isDevelopment
+  loggingEnabled: Meteor.isDevelopment,
+  forceDDP: false
 };
 
 function log( /* arguments */ ) {
@@ -26,6 +27,7 @@ SyncInternals = {
   offsetTracker: new Tracker.Dependency(),
   syncTracker: new Tracker.Dependency(),
   isSynced: false,
+  usingDDP: false,
   timeTick: {},
   getDiscrepancy: function (lastTime, currentTime, interval) {
     return currentTime - (lastTime + interval)
@@ -46,44 +48,62 @@ let attempts = 0;
  */
 
 let syncUrl;
-if (Meteor.isCordova || Meteor.isDesktop) {
-  // Only use Meteor.absoluteUrl for Cordova and Desktop; see
-  // https://github.com/meteor/meteor/issues/4696
-  // https://github.com/mizzao/meteor-timesync/issues/30
-  // Cordova should never be running out of a subdirectory...
-  syncUrl = Meteor.absoluteUrl('_timesync');
-} else {
-  // Support Meteor running in relative paths, based on computed root url prefix
-  // https://github.com/mizzao/meteor-timesync/pull/40
-  const basePath = __meteor_runtime_config__.ROOT_URL_PATH_PREFIX || '';
-  syncUrl = basePath + '/_timesync';
+
+TimeSync.setSyncUrl = function (url) {
+  if (url) {
+    syncUrl = url;
+  } else if (Meteor.isCordova || Meteor.isDesktop) {
+    // Only use Meteor.absoluteUrl for Cordova and Desktop; see
+    // https://github.com/meteor/meteor/issues/4696
+    // https://github.com/mizzao/meteor-timesync/issues/30
+    // Cordova should never be running out of a subdirectory...
+    syncUrl = Meteor.absoluteUrl('_timesync');
+  } else {
+    // Support Meteor running in relative paths, based on computed root url prefix
+    // https://github.com/mizzao/meteor-timesync/pull/40
+    const basePath = __meteor_runtime_config__.ROOT_URL_PATH_PREFIX || '';
+    syncUrl = basePath + '/_timesync';
+  }
+};
+TimeSync.getSyncUrl = function () {
+  return syncUrl;
 }
+TimeSync.setSyncUrl();
 
 const updateOffset = function () {
   const t0 = Date.now();
-
-  HTTP.get(syncUrl, function (err, response) {
-    const t3 = Date.now(); // Grab this now
-    if (err) {
-      // We'll still use our last computed offset if is defined
-      log('Error syncing to server time: ', err);
-      if (++attempts <= maxAttempts) {
-        Meteor.setTimeout(TimeSync.resync, 1000);
-      } else {
-        log('Max number of time sync attempts reached. Giving up.');
-      }
-      return;
-    }
-
-    attempts = 0; // It worked
-
-    const ts = parseInt(response.content, 10);
-    SyncInternals.isSynced = true;
-    SyncInternals.offset = Math.round(((ts - t0) + (ts - t3)) / 2);
-    SyncInternals.roundTripTime = t3 - t0; // - (ts - ts) which is 0
-    SyncInternals.offsetTracker.changed();
-  });
+  if (TimeSync.forceDDP || SyncInternals.useDDP) {
+    Meteor.call('_timeSync', function (err, res) {
+      handleResponse(t0, err, res);
+    });
+  } else {
+    HTTP.get(syncUrl, function (err, res) {
+      handleResponse(t0, err, res);
+    });
+  }
 };
+
+const handleResponse = function (t0, err, res) {
+  const t3 = Date.now(); // Grab this now
+  if (err) {
+    // We'll still use our last computed offset if is defined
+    log('Error syncing to server time: ', err);
+    if (++attempts <= maxAttempts) {
+      Meteor.setTimeout(TimeSync.resync, 1000);
+    } else {
+      log('Max number of time sync attempts reached. Giving up.');
+    }
+    return;
+  }
+
+  attempts = 0; // It worked
+  const response = res.content || res;
+  const ts = parseInt(response, 10);
+  SyncInternals.isSynced = true;
+  SyncInternals.offset = Math.round(((ts - t0) + (ts - t3)) / 2);
+  SyncInternals.roundTripTime = t3 - t0; // - (ts - ts) which is 0
+  SyncInternals.offsetTracker.changed();
+}
 
 // Reactive variable for server time that updates every second.
 TimeSync.serverTime = function (clientTime, interval) {
@@ -116,8 +136,9 @@ let resyncIntervalId = null;
 
 TimeSync.resync = function () {
   if (resyncIntervalId !== null) Meteor.clearInterval(resyncIntervalId);
+
   updateOffset();
-  resyncIntervalId = Meteor.setInterval(updateOffset, 600000);
+  resyncIntervalId = Meteor.setInterval(updateOffset, (SyncInternals.useDDP) ? 300000 : 600000);
 };
 
 // Run this as soon as we load, even before Meteor.startup()
@@ -128,6 +149,7 @@ Tracker.autorun(function () {
   const connected = Meteor.status().connected;
   if (connected && !wasConnected) TimeSync.resync();
   wasConnected = connected;
+  SyncInternals.useDDP = connected;
 });
 
 // Resync if unexpected change by more than a few seconds. This needs to be
@@ -158,7 +180,7 @@ function getTickDependency(interval) {
 Meteor.setInterval(function () {
   const currentClientTime = Date.now();
   const discrepancy = SyncInternals.getDiscrepancy(lastClientTime, currentClientTime, defaultInterval);
-  
+
   if (Math.abs(discrepancy) < tickCheckTolerance) {
     // No problem here, just keep ticking along
     SyncInternals.timeTick[defaultInterval].changed();
