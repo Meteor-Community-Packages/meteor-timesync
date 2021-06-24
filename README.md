@@ -1,4 +1,4 @@
-meteor-timesync [![Build Status](https://travis-ci.org/mizzao/meteor-timesync.svg)](https://travis-ci.org/mizzao/meteor-timesync)
+meteor-timesync [![Build Status](https://travis-ci.org/mizzao/meteor-timesync.svg?branch=master)](https://travis-ci.org/mizzao/meteor-timesync)
 ===============
 
 NTP-style time synchronization between server and client, and facilities to 
