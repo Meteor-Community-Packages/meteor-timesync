@@ -1,5 +1,14 @@
 ## vNEXT
 
+## v0.5.3
+
+- Bump minimum Meteor version to 1.12
+- Take into account `ROOT_URL` environment variable if set
+
+## v0.5.2
+
+- Compatibility with Meteor 2.3+
+
 ## v0.5.1
 
 - Fix an issue where `TimeSync.ServerTime` returned NaN when executed in meteor-desktop.

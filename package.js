@@ -1,12 +1,12 @@
 Package.describe({
   name: "mizzao:timesync",
   summary: "NTP-style time synchronization between server and client",
-  version: "0.5.2",
+  version: "0.5.3",
   git: "https://github.com/Meteor-Community-Packages/meteor-timesync"
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom(["1.9", "2.3"]);
+  api.versionsFrom(["1.12", "2.3"]);
 
   api.use([
     'check',
