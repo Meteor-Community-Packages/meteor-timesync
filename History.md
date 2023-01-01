@@ -7,7 +7,8 @@
 
 ## v0.5.2
 
-- Compatibility with Meteor 2.3+
+- Travis CI NodeJS environment updated to use Node 12 and 14
+- Updated package resolution to work for Meteor 2.3
 
 ## v0.5.1
 
