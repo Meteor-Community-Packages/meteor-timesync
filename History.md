@@ -14,6 +14,10 @@
 - Added option to set the timesync URL using `TimeSync.setSyncUrl`
 - ... more to come, v0.6.0 is a work in progress!
 
+## v0.5.4
+
+- Adding CORS compatibility for Ionic capacitorjs
+
 ## v0.5.3
 
 - Bump minimum Meteor version to 1.12
