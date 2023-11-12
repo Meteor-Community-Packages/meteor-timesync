@@ -20,9 +20,10 @@ WebApp.rawConnectHandlers.use('/_timesync',
     // and http://meteor.local for earlier versions
     const origin = req.headers.origin;
 
-    if (origin && (origin === 'http://meteor.local' ||
+    if (origin && ( origin === 'http://meteor.local' ||
+        origin === 'capacitor://meteor.local' ||
         origin === 'meteor://desktop' ||
-        /^http:\/\/localhost:1[23]\d\d\d$/.test(origin))) {
+        /^http:\/\/localhost:1[23]\d\d\d$/.test(origin) ) ) {
       res.setHeader('Access-Control-Allow-Origin', origin);
     }
 
