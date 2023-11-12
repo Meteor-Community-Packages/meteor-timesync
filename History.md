@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.5.4
+
+- Adding CORS compatibility for Ionic capacitorjs
+
 ## v0.5.3
 
 - Bump minimum Meteor version to 1.12
