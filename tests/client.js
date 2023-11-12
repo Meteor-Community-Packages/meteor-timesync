@@ -3,17 +3,17 @@ import { Tracker } from 'meteor/tracker';
 import { HTTP } from 'meteor/http';
 
 Tinytest.add("timesync - tick check - normal tick", function (test) {
-  var lastTime = 5000;
-  var currentTime = 6000;
-  var interval = 1000;
+  const lastTime = 5000;
+  const currentTime = 6000;
+  const interval = 1000;
 
   test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), 0);
 });
 
 Tinytest.add("timesync - tick check - slightly off", function (test) {
-  var lastTime = 5000;
-  var currentTime = 6500;
-  var interval = 1000;
+  const lastTime = 5000;
+  let currentTime = 6500;
+  const interval = 1000;
 
   test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), 500);
 
@@ -23,9 +23,9 @@ Tinytest.add("timesync - tick check - slightly off", function (test) {
 });
 
 Tinytest.add("timesync - tick check - big jump", function (test) {
-  var lastTime = 5000;
-  var currentTime = 0;
-  var interval = 1000;
+  const lastTime = 5000;
+  let currentTime = 0;
+  const interval = 1000;
 
   test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), -6000);
 
@@ -41,7 +41,7 @@ Tinytest.add("timesync - tick check - big jump", function (test) {
 Tinytest.addAsync("timesync - basic - initial sync", function (test, next) {
 
   function success() {
-    var syncedTime = TimeSync.serverTime();
+    const syncedTime = TimeSync.serverTime();
 
     // Make sure the time exists
     test.isTrue(syncedTime);
@@ -80,26 +80,26 @@ Tinytest.addAsync("timesync - basic - serverTime format", function (test, next) 
 
 Tinytest.addAsync("timesync - basic - different sync intervals", function (test, next) {
 
-  var aCount = 0,
-    bCount = 0,
-    cCount = 0;
+  let aCount = 0;
+  let bCount = 0;
+  let cCount = 0;
 
-  var a = Tracker.autorun(function () {
+  const a = Tracker.autorun(function () {
     TimeSync.serverTime(null, 500);
     aCount++;
   });
 
-  var b = Tracker.autorun(function () {
+  const b = Tracker.autorun(function () {
     TimeSync.serverTime();
     bCount++;
   });
 
-  var c = Tracker.autorun(function () {
+  const c = Tracker.autorun(function () {
     TimeSync.serverTime(null, 2000);
     cCount++;
   });
 
-  var testInterval = 4990;
+  const testInterval = 4990;
 
   Meteor.setTimeout(function () {
 
@@ -142,7 +142,7 @@ Tinytest.addAsync("timesync - basic - DDP timeSync", function (test, next) {
 });
 
 Tinytest.addAsync("timesync - basic - HTTP timeSync", function (test, next) {
-  var syncUrl = TimeSync.getSyncUrl();
+  const syncUrl = TimeSync.getSyncUrl();
 
   test.isNotNull(syncUrl);
 
@@ -152,7 +152,7 @@ Tinytest.addAsync("timesync - basic - HTTP timeSync", function (test, next) {
       next();
     }
     test.isTrue(res.content);
-    var serverTime = parseInt(res.content,10);
+    const serverTime = parseInt(res.content,10);
     test.isTrue(_.isNumber(serverTime));
     test.isTrue(Math.abs(serverTime - Date.now()) < 1000);
     next();
