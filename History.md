@@ -14,6 +14,16 @@
 - Added option to set the timesync URL using `TimeSync.setSyncUrl`
 - ... more to come, v0.6.0 is a work in progress!
 
+## v0.5.3
+
+- Bump minimum Meteor version to 1.12
+- Take into account `ROOT_URL` environment variable if set
+
+## v0.5.2
+
+- Travis CI NodeJS environment updated to use Node 12 and 14
+- Updated package resolution to work for Meteor 2.3
+
 ## v0.5.1
 
 - Fix an issue where `TimeSync.ServerTime` returned NaN when executed in meteor-desktop.
