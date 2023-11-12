@@ -2,11 +2,6 @@ import { Meteor } from 'meteor/meteor';
 import { Tracker } from 'meteor/tracker';
 import { HTTP } from 'meteor/http';
 
-// IE8 doesn't have Date.now()
-Date.now = Date.now || function () {
-  return +new Date;
-};
-
 TimeSync = {
   loggingEnabled: Meteor.isDevelopment,
   forceDDP: false
