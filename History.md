@@ -1,4 +1,7 @@
 ## vNEXT
+## v0.5.5
+
+- Added compatibility for Meteor 3.0-beta.7
 
 ## v0.6.0
 

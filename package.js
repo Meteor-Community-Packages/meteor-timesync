@@ -6,7 +6,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom(["1.12", "2.3"]);
+  api.versionsFrom(["1.12", "2.3", '3.0-beta.7']);
 
   api.use([
     'check',
