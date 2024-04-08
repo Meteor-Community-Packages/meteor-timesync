@@ -1,7 +1,4 @@
 ## vNEXT
-## v0.5.5
-
-- Added compatibility for Meteor 3.0-beta.7
 
 ## v0.6.0
 
@@ -15,6 +12,10 @@
 - Added tests for DDP and HTTP sync
 - Added option to set the timesync URL using `TimeSync.setSyncUrl`
 - Removed IE8 compat function
+
+## v0.5.5
+
+- Added compatibility for Meteor 3.0-beta.7
 
 ## v0.5.4
 
