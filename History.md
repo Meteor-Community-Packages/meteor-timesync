@@ -1,4 +1,18 @@
 ## vNEXT
+
+## v0.6.0
+
+- Code Format Refactor
+- Changed Deps to Tracker (#49)
+- Only show log output if running in development
+- Added _timeSync Meteor Method for doing timesync over DDP instead of HTTP
+- Auto switch to DDP after initial HTTP timesync to improve subsequent round trip times
+- Added option TimeSync.forceDDP to always use DDP, even for first sync (which may be slow!)
+- Shortened resync interval from 1 minute to 30 seconds when using DDP.
+- Added tests for DDP and HTTP sync
+- Added option to set the timesync URL using `TimeSync.setSyncUrl`
+- Removed IE8 compat function
+
 ## v0.5.5
 
 - Added compatibility for Meteor 3.0-beta.7
@@ -32,11 +46,11 @@
 
 ## v0.3.4
 
-- Explicitly pull in client-side `check` for Meteor 1.2 apps. 
+- Explicitly pull in client-side `check` for Meteor 1.2 apps.
 
 ## v0.3.3
 
-- Be more robust with sync url when outside of Cordova. (#30) 
+- Be more robust with sync url when outside of Cordova. (#30)
 
 ## v0.3.2
 

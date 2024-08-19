@@ -1,15 +1,20 @@
-Tinytest.add("timesync - tick check - normal tick", function(test) {
-  var lastTime = 5000;
-  var currentTime = 6000;
-  var interval = 1000;
+import { Meteor } from 'meteor/meteor';
+import { Tracker } from 'meteor/tracker';
+import { HTTP } from 'meteor/http';
+import { _ } from 'meteor/underscore';
+
+Tinytest.add("timesync - tick check - normal tick", function (test) {
+  const lastTime = 5000;
+  const currentTime = 6000;
+  const interval = 1000;
 
   test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), 0);
 });
 
-Tinytest.add("timesync - tick check - slightly off", function(test) {
-  var lastTime = 5000;
-  var currentTime = 6500;
-  var interval = 1000;
+Tinytest.add("timesync - tick check - slightly off", function (test) {
+  const lastTime = 5000;
+  let currentTime = 6500;
+  const interval = 1000;
 
   test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), 500);
 
@@ -18,10 +23,10 @@ Tinytest.add("timesync - tick check - slightly off", function(test) {
   test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), -500);
 });
 
-Tinytest.add("timesync - tick check - big jump", function(test) {
-  var lastTime = 5000;
-  var currentTime = 0;
-  var interval = 1000;
+Tinytest.add("timesync - tick check - big jump", function (test) {
+  const lastTime = 5000;
+  let currentTime = 0;
+  const interval = 1000;
 
   test.equal(SyncInternals.getDiscrepancy(lastTime, currentTime, interval), -6000);
 
@@ -34,10 +39,10 @@ Tinytest.add("timesync - tick check - big jump", function(test) {
   TODO: add tests for proper dependencies in reactive functions
  */
 
-Tinytest.addAsync("timesync - basic - initial sync", function(test, next) {
+Tinytest.addAsync("timesync - basic - initial sync", function (test, next) {
 
   function success() {
-    var syncedTime = TimeSync.serverTime();
+    const syncedTime = TimeSync.serverTime();
 
     // Make sure the time exists
     test.isTrue(syncedTime);
@@ -46,7 +51,7 @@ Tinytest.addAsync("timesync - basic - initial sync", function(test, next) {
     // always be true in PhantomJS tests where client/server are the same
     // machine, although it might fail in development environments, for example
     // when the server and client are different VMs.
-    test.isTrue( Math.abs(syncedTime - Date.now()) < 1000 );
+    test.isTrue(Math.abs(syncedTime - Date.now()) < 1000);
 
     next();
   }
@@ -59,43 +64,45 @@ Tinytest.addAsync("timesync - basic - initial sync", function(test, next) {
   simplePoll(TimeSync.isSynced, success, fail, 5000, 100);
 });
 
-Tinytest.addAsync("timesync - basic - serverTime format", function(test, next) {
+Tinytest.addAsync("timesync - basic - serverTime format", function (test, next) {
 
-  test.isTrue(_.isNumber( TimeSync.serverTime() ));
+  test.isTrue(_.isNumber(TimeSync.serverTime()));
 
-  test.isTrue(_.isNumber( TimeSync.serverTime(null) ));
+  test.isTrue(_.isNumber(TimeSync.serverTime(null)));
 
   // Accept Date as client time
-  test.isTrue(_.isNumber( TimeSync.serverTime(new Date()) ));
+  test.isTrue(_.isNumber(TimeSync.serverTime(new Date())));
 
   // Accept epoch as client time
-  test.isTrue(_.isNumber( TimeSync.serverTime(Date.now()) ));
+  test.isTrue(_.isNumber(TimeSync.serverTime(Date.now())));
 
   next();
 });
 
-Tinytest.addAsync("timesync - basic - different sync intervals", function(test, next) {
+Tinytest.addAsync("timesync - basic - different sync intervals", function (test, next) {
 
-  var aCount = 0, bCount = 0, cCount = 0;
+  let aCount = 0;
+  let bCount = 0;
+  let cCount = 0;
 
-  var a = Tracker.autorun(function () {
+  const a = Tracker.autorun(function () {
     TimeSync.serverTime(null, 500);
     aCount++;
   });
 
-  var b = Tracker.autorun(function () {
+  const b = Tracker.autorun(function () {
     TimeSync.serverTime();
     bCount++;
   });
 
-  var c = Tracker.autorun(function () {
+  const c = Tracker.autorun(function () {
     TimeSync.serverTime(null, 2000);
     cCount++;
   });
 
-  var testInterval = 4990;
+  const testInterval = 4990;
 
-  Meteor.setTimeout(function() {
+  Meteor.setTimeout(function () {
 
     test.equal(aCount, 10); // 0, 500, 1000, 1500 ...
     // not going to be 5 since the first tick won't generate this dep
@@ -115,4 +122,40 @@ Tinytest.addAsync("timesync - basic - different sync intervals", function(test, 
     next()
   }, testInterval);
 
+});
+
+Tinytest.addAsync("timesync - basic - DDP timeSync", function (test, next) {
+  Meteor.call('_timeSync', function (err, res) {
+    if (err) {
+      test.fail();
+      next();
+    }
+    test.isTrue(_.isNumber(res));
+
+    // Make sure it's close to the current time on the client. This should
+    // always be true in PhantomJS tests where client/server are the same
+    // machine, although it might fail in development environments, for example
+    // when the server and client are different VMs.
+    test.isTrue(Math.abs(res - Date.now()) < 1000);
+
+    next();
+  });
+});
+
+Tinytest.addAsync("timesync - basic - HTTP timeSync", function (test, next) {
+  const syncUrl = TimeSync.getSyncUrl();
+
+  test.isNotNull(syncUrl);
+
+  HTTP.get(syncUrl, function (err, res) {
+    if (err) {
+      test.fail();
+      next();
+    }
+    test.isTrue(res.content);
+    const serverTime = parseInt(res.content,10);
+    test.isTrue(_.isNumber(serverTime));
+    test.isTrue(Math.abs(serverTime - Date.now()) < 1000);
+    next();
+  });
 });
