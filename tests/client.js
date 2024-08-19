@@ -148,7 +148,7 @@ Tinytest.addAsync("timesync - basic - HTTP timeSync", function (test, next) {
   test.isNotNull(syncUrl);
 
   fetch(syncUrl, { method: 'GET' })
-    .then(res => res.json())
+    .then(res => res.text())
     .then(res => {
       test.isTrue(res);
       const serverTime = parseInt(res,10);
