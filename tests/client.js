@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Tracker } from 'meteor/tracker';
 import { HTTP } from 'meteor/http';
+import { _ } from 'meteor/underscore';
 
 Tinytest.add("timesync - tick check - normal tick", function (test) {
   const lastTime = 5000;
