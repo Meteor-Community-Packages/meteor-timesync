@@ -1,5 +1,15 @@
 ## vNEXT
 
+## v1.0.0
+
+** BREAKING **
+
+- Upgraded to Meteor 3, no backwards compatibility
+
+## v0.7.0
+
+- Replace `HTTP` package and use with `fetch`
+
 ## v0.6.0
 
 - Code Format Refactor

@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Tracker } from 'meteor/tracker';
-import { HTTP } from 'meteor/http';
+import { fetch } from 'meteor/fetch';
+import { check, Match } from 'meteor/check';
 
 TimeSync = {
   loggingEnabled: Meteor.isDevelopment,
@@ -57,7 +58,7 @@ TimeSync.setSyncUrl = function (url) {
     // Support Meteor running in relative paths, based on computed root url prefix
     // https://github.com/mizzao/meteor-timesync/pull/40
     const basePath = __meteor_runtime_config__.ROOT_URL_PATH_PREFIX || '';
-    syncUrl = basePath + '/_timesync';
+    syncUrl = `${basePath}/_timesync`;
   }
 };
 TimeSync.getSyncUrl = function () {
@@ -68,13 +69,14 @@ TimeSync.setSyncUrl();
 const updateOffset = function () {
   const t0 = Date.now();
   if (TimeSync.forceDDP || SyncInternals.useDDP) {
-    Meteor.call('_timeSync', function (err, res) {
-      handleResponse(t0, err, res);
-    });
+    Meteor.callAsync('_timeSync')
+      .then((res) => handleResponse(t0, null, res))
+      .catch((err) => handleResponse(t0, err, null));
   } else {
-    HTTP.get(syncUrl, function (err, res) {
-      handleResponse(t0, err, res);
-    });
+    fetch(syncUrl, { method: 'GET', cache: 'no-cache' })
+      .then(res => res.text())
+      .then((res) => handleResponse(t0, null, res))
+      .catch((err) => handleResponse(t0, err, null));
   }
 };
 
@@ -92,8 +94,7 @@ const handleResponse = function (t0, err, res) {
   }
 
   attempts = 0; // It worked
-  const response = res.content || res;
-  const ts = parseInt(response, 10);
+  const ts = parseInt(res, 10);
   SyncInternals.isSynced = true;
   SyncInternals.offset = Math.round(((ts - t0) + (ts - t3)) / 2);
   SyncInternals.roundTripTime = t3 - t0; // - (ts - ts) which is 0
