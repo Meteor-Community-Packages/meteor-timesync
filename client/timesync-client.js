@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Tracker } from 'meteor/tracker';
-import { HTTP } from 'meteor/http';
+import { fetch } from 'meteor/fetch';
 
 TimeSync = {
   loggingEnabled: Meteor.isDevelopment,
@@ -72,9 +72,10 @@ const updateOffset = function () {
       handleResponse(t0, err, res);
     });
   } else {
-    HTTP.get(syncUrl, function (err, res) {
-      handleResponse(t0, err, res);
-    });
+    fetch(syncUrl, { method: 'GET', cache: 'no-cache' })
+      .then(res => res.json())
+      .then((res) => handleResponse(t0, null, res))
+      .catch((err) => handleResponse(t0, err, null));
   }
 };
 
@@ -92,8 +93,7 @@ const handleResponse = function (t0, err, res) {
   }
 
   attempts = 0; // It worked
-  const response = res.content || res;
-  const ts = parseInt(response, 10);
+  const ts = parseInt(res, 10);
   SyncInternals.isSynced = true;
   SyncInternals.offset = Math.round(((ts - t0) + (ts - t3)) / 2);
   SyncInternals.roundTripTime = t3 - t0; // - (ts - ts) which is 0

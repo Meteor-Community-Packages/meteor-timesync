@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Tracker } from 'meteor/tracker';
-import { HTTP } from 'meteor/http';
+import { fetch } from 'meteor/fetch';
 import { _ } from 'meteor/underscore';
 
 Tinytest.add("timesync - tick check - normal tick", function (test) {
@@ -147,15 +147,20 @@ Tinytest.addAsync("timesync - basic - HTTP timeSync", function (test, next) {
 
   test.isNotNull(syncUrl);
 
-  HTTP.get(syncUrl, function (err, res) {
-    if (err) {
-      test.fail();
+  fetch(syncUrl, { method: 'GET' })
+    .then(res => res.json())
+    .then(res => {
+      test.isTrue(res);
+      const serverTime = parseInt(res,10);
+      test.isTrue(_.isNumber(serverTime));
+      test.isTrue(Math.abs(serverTime - Date.now()) < 1000);
       next();
-    }
-    test.isTrue(res.content);
-    const serverTime = parseInt(res.content,10);
-    test.isTrue(_.isNumber(serverTime));
-    test.isTrue(Math.abs(serverTime - Date.now()) < 1000);
-    next();
+    })
+    .catch(err => {
+      console.dir(err)
+      if (err) {
+        test.fail();
+        next();
+      }
   });
 });
