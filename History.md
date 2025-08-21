@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.7.0
+
+- Replace `HTTP` package and use with `fetch`
+
 ## v0.6.0
 
 - Code Format Refactor
