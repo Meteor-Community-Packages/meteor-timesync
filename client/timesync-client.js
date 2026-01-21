@@ -68,7 +68,7 @@ TimeSync.setSyncUrl();
 
 const updateOffset = function () {
   const t0 = Date.now();
-  if (TimeSync.forceDDP || SyncInternals.useDDP) {
+  if (Meteor.isCordova || TimeSync.forceDDP || SyncInternals.useDDP) {
     Meteor.callAsync('_timeSync')
       .then((res) => handleResponse(t0, null, res))
       .catch((err) => handleResponse(t0, err, null));
