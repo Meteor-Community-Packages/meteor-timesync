@@ -19,25 +19,21 @@ Package.onUse(function (api) {
   api.use(['ecmascript']);
 
   // Our files
-  api.addFiles('server/index.js', 'server');
-  api.addFiles('client/index.js', 'client');
-
-  api.export('TimeSync', 'client');
-  api.export('SyncInternals', 'client', {
-    testOnly: true
-  });
+  api.mainModule('server/index.js', 'server');
+  api.mainModule('client/index.js', 'client');
 });
 
 Package.onTest(function (api) {
   api.use([
     'ecmascript',
-    'tinytest',
+    'meteortesting:mocha',
     'test-helpers'
   ]);
 
-  api.use(['tracker', 'underscore'], 'client');
+  api.use(['tracker', 'jquery'], 'client');
 
   api.use('mizzao:timesync');
+
 
   api.addFiles('tests/client.js', 'client');
 });
