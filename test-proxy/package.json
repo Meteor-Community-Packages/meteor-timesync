@@ -7,11 +7,11 @@
     "test:browser": "TEST_SERVER=0  METEOR_PACKAGE_DIRS='../:../../'  TEST_WATCH=1 meteor test-packages --raw-logs --driver-package meteortesting:mocha ../"
   },
   "dependencies": {
-    "@babel/runtime": "^7.23.5",
-    "meteor-node-stubs": "^1.2.12"
+    "@babel/runtime": "^7.29.2",
+    "meteor-node-stubs": "^1.2.27"
   },
   "devDependencies": {
     "chai": "^6.2.2",
-    "puppeteer": "^24.37.2"
+    "puppeteer": "^24.40.0"
   }
 }
