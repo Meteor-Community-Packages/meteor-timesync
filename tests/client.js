@@ -175,26 +175,27 @@ describe('Timesync', () => {
   // request to /_timesync can fail (CORS, URL resolution). updateOffset()
   // should force DDP transport when Meteor.isCordova is true.
   describe('transport selection', () => {
-    // Spy on the transport layer so we can assert which one updateOffset()
-    // picked. Returns a cleanup function that restores the originals.
+    // Spy on the DDP side via Meteor.callAsync monkey-patch, and on the HTTP
+    // side via PerformanceObserver: `fetch` is imported as a module binding in
+    // timesync-client.js and cannot be swapped from the test, but every fetch
+    // still surfaces as a `resource` entry in the Performance API.
     function installTransportSpies(syncUrl, counters) {
       const originalCallAsync = Meteor.callAsync;
-      const originalFetch = globalThis.fetch;
-
       Meteor.callAsync = function (methodName) {
         if (methodName === '_timeSync') counters.ddp++;
         return originalCallAsync.apply(this, arguments);
       };
 
-      globalThis.fetch = function (url) {
-        const urlString = typeof url === 'string' ? url : (url && url.url);
-        if (urlString === syncUrl) counters.http++;
-        return originalFetch.apply(this, arguments);
-      };
+      const po = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.name && entry.name.indexOf(syncUrl) !== -1) counters.http++;
+        }
+      });
+      po.observe({ type: 'resource', buffered: false });
 
       return function restore() {
         Meteor.callAsync = originalCallAsync;
-        globalThis.fetch = originalFetch;
+        po.disconnect();
       };
     }
 
@@ -230,16 +231,20 @@ describe('Timesync', () => {
       simplePoll(
         () => counters.ddp >= 1,
         () => {
-          cleanup();
-          try {
-            assert.isAtLeast(counters.ddp, 1,
-              "Meteor.callAsync('_timeSync') must be used on Cordova");
-            assert.equal(counters.http, 0,
-              "HTTP fetch to the sync URL must not be used on Cordova");
-            done();
-          } catch (err) {
-            done(err);
-          }
+          // Give PerformanceObserver a tick to flush any pending resource
+          // entries before asserting that HTTP was not used.
+          Meteor.setTimeout(() => {
+            cleanup();
+            try {
+              assert.isAtLeast(counters.ddp, 1,
+                "Meteor.callAsync('_timeSync') must be used on Cordova");
+              assert.equal(counters.http, 0,
+                "HTTP fetch to the sync URL must not be used on Cordova");
+              done();
+            } catch (err) {
+              done(err);
+            }
+          }, 100);
         },
         () => {
           cleanup();
