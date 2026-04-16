@@ -170,4 +170,130 @@ describe('Timesync', () => {
         }
     });
   });
+
+  // Regression tests for the Cordova/Capacitor fix: on mobile webviews the HTTP
+  // request to /_timesync can fail (CORS, URL resolution). updateOffset()
+  // should force DDP transport when Meteor.isCordova is true.
+  describe('transport selection', () => {
+    // Spy on the transport layer so we can assert which one updateOffset()
+    // picked. Returns a cleanup function that restores the originals.
+    function installTransportSpies(syncUrl, counters) {
+      const originalCallAsync = Meteor.callAsync;
+      const originalFetch = globalThis.fetch;
+
+      Meteor.callAsync = function (methodName) {
+        if (methodName === '_timeSync') counters.ddp++;
+        return originalCallAsync.apply(this, arguments);
+      };
+
+      globalThis.fetch = function (url) {
+        const urlString = typeof url === 'string' ? url : (url && url.url);
+        if (urlString === syncUrl) counters.http++;
+        return originalFetch.apply(this, arguments);
+      };
+
+      return function restore() {
+        Meteor.callAsync = originalCallAsync;
+        globalThis.fetch = originalFetch;
+      };
+    }
+
+    it('forces DDP transport when Meteor.isCordova is true', function (done) {
+      this.timeout(10000);
+
+      const originalIsCordova = Meteor.isCordova;
+      const originalForceDDP = TimeSync.forceDDP;
+      const originalUseDDP = SyncInternals.useDDP;
+      const syncUrl = TimeSync.getSyncUrl();
+
+      const counters = { ddp: 0, http: 0 };
+      const restoreSpies = installTransportSpies(syncUrl, counters);
+
+      // Simulate a Cordova client whose DDP connection flag has not yet flipped.
+      // Without the fix, this combination would route through HTTP fetch.
+      Meteor.isCordova = true;
+      TimeSync.forceDDP = false;
+      SyncInternals.useDDP = false;
+
+      function cleanup() {
+        restoreSpies();
+        Meteor.isCordova = originalIsCordova;
+        TimeSync.forceDDP = originalForceDDP;
+        SyncInternals.useDDP = originalUseDDP;
+        // A second resync rearms the internal setInterval with the restored
+        // state, avoiding a transport-mismatched timer leaking into later tests.
+        TimeSync.resync();
+      }
+
+      TimeSync.resync();
+
+      simplePoll(
+        () => counters.ddp >= 1,
+        () => {
+          cleanup();
+          try {
+            assert.isAtLeast(counters.ddp, 1,
+              "Meteor.callAsync('_timeSync') must be used on Cordova");
+            assert.equal(counters.http, 0,
+              "HTTP fetch to the sync URL must not be used on Cordova");
+            done();
+          } catch (err) {
+            done(err);
+          }
+        },
+        () => {
+          cleanup();
+          done(new Error('Cordova client did not route through DDP within 5s'));
+        },
+        5000, 50
+      );
+    });
+
+    it('uses HTTP transport on a plain browser by default', function (done) {
+      this.timeout(10000);
+
+      const originalIsCordova = Meteor.isCordova;
+      const originalForceDDP = TimeSync.forceDDP;
+      const originalUseDDP = SyncInternals.useDDP;
+      const syncUrl = TimeSync.getSyncUrl();
+
+      const counters = { ddp: 0, http: 0 };
+      const restoreSpies = installTransportSpies(syncUrl, counters);
+
+      Meteor.isCordova = false;
+      TimeSync.forceDDP = false;
+      SyncInternals.useDDP = false;
+
+      function cleanup() {
+        restoreSpies();
+        Meteor.isCordova = originalIsCordova;
+        TimeSync.forceDDP = originalForceDDP;
+        SyncInternals.useDDP = originalUseDDP;
+        TimeSync.resync();
+      }
+
+      TimeSync.resync();
+
+      simplePoll(
+        () => counters.http >= 1,
+        () => {
+          cleanup();
+          try {
+            assert.isAtLeast(counters.http, 1,
+              'HTTP fetch to the sync URL must be used on a plain browser');
+            assert.equal(counters.ddp, 0,
+              "Meteor.callAsync('_timeSync') must not be used on a plain browser");
+            done();
+          } catch (err) {
+            done(err);
+          }
+        },
+        () => {
+          cleanup();
+          done(new Error('Browser client did not route through HTTP within 5s'));
+        },
+        5000, 50
+      );
+    });
+  });
 });
