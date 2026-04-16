@@ -3,7 +3,7 @@ import { Tracker } from 'meteor/tracker';
 import { fetch } from 'meteor/fetch';
 import { check, Match } from 'meteor/check';
 
-TimeSync = {
+export const TimeSync = {
   loggingEnabled: Meteor.isDevelopment,
   forceDDP: false
 };
@@ -17,7 +17,7 @@ function log( /* arguments */ ) {
 const defaultInterval = 1000;
 
 // Internal values, exported for testing
-SyncInternals = {
+export const SyncInternals = {
   offset: undefined,
   roundTripTime: undefined,
   offsetTracker: new Tracker.Dependency(),

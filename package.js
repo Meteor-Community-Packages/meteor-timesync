@@ -1,12 +1,12 @@
 Package.describe({
   name: 'mizzao:timesync',
   summary: 'NTP-style time synchronization between server and client',
-  version: '1.0.0-beta.0',
+  version: '1.0.0-beta.1',
   git: "https://github.com/Meteor-Community-Packages/meteor-timesync"
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom(["3.0"]);
+  api.versionsFrom(["3.0.1", '3.4']);
 
   api.use([
     'check',
@@ -19,25 +19,21 @@ Package.onUse(function (api) {
   api.use(['ecmascript']);
 
   // Our files
-  api.addFiles('server/index.js', 'server');
-  api.addFiles('client/index.js', 'client');
-
-  api.export('TimeSync', 'client');
-  api.export('SyncInternals', 'client', {
-    testOnly: true
-  });
+  api.mainModule('server/index.js', 'server');
+  api.mainModule('client/index.js', 'client');
 });
 
 Package.onTest(function (api) {
   api.use([
     'ecmascript',
-    'tinytest',
+    'meteortesting:mocha',
     'test-helpers'
   ]);
 
-  api.use(['tracker', 'underscore'], 'client');
+  api.use(['tracker', 'jquery'], 'client');
 
   api.use('mizzao:timesync');
+
 
   api.addFiles('tests/client.js', 'client');
 });
