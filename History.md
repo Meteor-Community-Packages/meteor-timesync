@@ -4,7 +4,11 @@
 
 ** BREAKING **
 
-- Upgraded to Meteor 3, no backwards compatibility
+- Upgraded to Meteor 3 only, with no backwards compatibility for Meteor 2.
+- Switched package usage to Meteor 3 module imports, for example `import { TimeSync } from 'meteor/mizzao:timesync'`.
+- Kept regular browser clients on HTTP timesync by default to avoid DDP method queueing delays.
+- Forced DDP timesync for Cordova and Capacitor clients where HTTP sync can fail in mobile webviews.
+- Migrated package tests to Mocha/Puppeteer and GitHub Actions for Meteor 3.
 
 ## v0.7.0
 

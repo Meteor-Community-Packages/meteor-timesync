@@ -221,9 +221,6 @@ describe('Timesync', () => {
         Meteor.isCordova = originalIsCordova;
         TimeSync.forceDDP = originalForceDDP;
         SyncInternals.useDDP = originalUseDDP;
-        // A second resync rearms the internal setInterval with the restored
-        // state, avoiding a transport-mismatched timer leaking into later tests.
-        TimeSync.resync();
       }
 
       TimeSync.resync();
@@ -267,14 +264,13 @@ describe('Timesync', () => {
 
       Meteor.isCordova = false;
       TimeSync.forceDDP = false;
-      SyncInternals.useDDP = false;
+      SyncInternals.useDDP = true;
 
       function cleanup() {
         restoreSpies();
         Meteor.isCordova = originalIsCordova;
         TimeSync.forceDDP = originalForceDDP;
         SyncInternals.useDDP = originalUseDDP;
-        TimeSync.resync();
       }
 
       TimeSync.resync();
@@ -285,7 +281,7 @@ describe('Timesync', () => {
           cleanup();
           try {
             assert.isAtLeast(counters.http, 1,
-              'HTTP fetch to the sync URL must be used on a plain browser');
+              'HTTP fetch to the sync URL must be used on a plain browser, even after DDP connects');
             assert.equal(counters.ddp, 0,
               "Meteor.callAsync('_timeSync') must not be used on a plain browser");
             done();
@@ -299,6 +295,67 @@ describe('Timesync', () => {
         },
         5000, 50
       );
+    });
+
+    it('does not start concurrent sync requests', function (done) {
+      this.timeout(10000);
+
+      const originalIsCordova = Meteor.isCordova;
+      const originalForceDDP = TimeSync.forceDDP;
+      const originalUseDDP = SyncInternals.useDDP;
+      const originalCallAsync = Meteor.callAsync;
+
+      let callCount = 0;
+      let resolveCall;
+
+      Meteor.isCordova = true;
+      TimeSync.forceDDP = false;
+      SyncInternals.useDDP = false;
+      Meteor.callAsync = function (methodName) {
+        if (methodName === '_timeSync') {
+          callCount++;
+          return new Promise((resolve) => {
+            resolveCall = () => resolve(Date.now());
+          });
+        }
+        return originalCallAsync.apply(this, arguments);
+      };
+
+      function cleanup() {
+        Meteor.callAsync = originalCallAsync;
+        Meteor.isCordova = originalIsCordova;
+        TimeSync.forceDDP = originalForceDDP;
+        SyncInternals.useDDP = originalUseDDP;
+      }
+
+      TimeSync.resync();
+      TimeSync.resync();
+      TimeSync.resync();
+
+      Meteor.setTimeout(() => {
+        try {
+          assert.equal(callCount, 1,
+            'overlapping resync calls must share the in-flight sync request');
+          resolveCall();
+        } catch (err) {
+          cleanup();
+          done(err);
+          return;
+        }
+
+        simplePoll(
+          () => TimeSync.isSynced(),
+          () => {
+            cleanup();
+            done();
+          },
+          () => {
+            cleanup();
+            done(new Error('In-flight sync request did not resolve within 5s'));
+          },
+          5000, 50
+        );
+      }, 100);
     });
   });
 });
