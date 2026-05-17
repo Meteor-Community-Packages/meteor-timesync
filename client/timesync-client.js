@@ -1,8 +1,9 @@
 import { Meteor } from 'meteor/meteor';
 import { Tracker } from 'meteor/tracker';
 import { fetch } from 'meteor/fetch';
+import { check, Match } from 'meteor/check';
 
-TimeSync = {
+export const TimeSync = {
   loggingEnabled: Meteor.isDevelopment,
   forceDDP: false
 };
@@ -16,7 +17,7 @@ function log( /* arguments */ ) {
 const defaultInterval = 1000;
 
 // Internal values, exported for testing
-SyncInternals = {
+export const SyncInternals = {
   offset: undefined,
   roundTripTime: undefined,
   offsetTracker: new Tracker.Dependency(),
@@ -33,6 +34,9 @@ SyncInternals.timeTick[defaultInterval] = new Tracker.Dependency();
 
 const maxAttempts = 5;
 let attempts = 0;
+let syncInFlight = false;
+const ddpResyncInterval = 300000;
+const httpResyncInterval = 600000;
 
 /*
   This is an approximation of
@@ -57,7 +61,7 @@ TimeSync.setSyncUrl = function (url) {
     // Support Meteor running in relative paths, based on computed root url prefix
     // https://github.com/mizzao/meteor-timesync/pull/40
     const basePath = __meteor_runtime_config__.ROOT_URL_PATH_PREFIX || '';
-    syncUrl = basePath + '/_timesync';
+    syncUrl = `${basePath}/_timesync`;
   }
 };
 TimeSync.getSyncUrl = function () {
@@ -66,18 +70,27 @@ TimeSync.getSyncUrl = function () {
 TimeSync.setSyncUrl();
 
 const updateOffset = function () {
+  if (syncInFlight) return;
+
+  syncInFlight = true;
   const t0 = Date.now();
-  if (TimeSync.forceDDP || SyncInternals.useDDP) {
-    Meteor.call('_timeSync', function (err, res) {
-      handleResponse(t0, err, res);
-    });
-  } else {
-    fetch(syncUrl, { method: 'GET', cache: 'no-cache' })
-      .then(res => res.json())
+  const request = useDDPTransport()
+    ? Meteor.callAsync('_timeSync')
       .then((res) => handleResponse(t0, null, res))
-      .catch((err) => handleResponse(t0, err, null));
-  }
+    : fetch(syncUrl, { method: 'GET', cache: 'no-cache' })
+      .then(res => res.text())
+      .then((res) => handleResponse(t0, null, res));
+
+  request
+    .catch((err) => handleResponse(t0, err, null))
+    .finally(() => {
+      syncInFlight = false;
+    });
 };
+
+function useDDPTransport() {
+  return Meteor.isCordova || TimeSync.forceDDP;
+}
 
 const handleResponse = function (t0, err, res) {
   const t3 = Date.now(); // Grab this now
@@ -132,8 +145,9 @@ let resyncIntervalId = null;
 TimeSync.resync = function () {
   if (resyncIntervalId !== null) Meteor.clearInterval(resyncIntervalId);
 
+  const interval = useDDPTransport() ? ddpResyncInterval : httpResyncInterval;
   updateOffset();
-  resyncIntervalId = Meteor.setInterval(updateOffset, (SyncInternals.useDDP) ? 300000 : 600000);
+  resyncIntervalId = Meteor.setInterval(updateOffset, interval);
 };
 
 // Run this as soon as we load, even before Meteor.startup()

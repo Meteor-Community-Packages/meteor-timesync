@@ -11,24 +11,33 @@ jobs:
     strategy:
       matrix:
         meteorRelease:
-          - '--release 1.12.1'
-          - '--release 2.3'
-          - '--release 2.8.1'
-          - '--release 2.16'
+          - '3.0.1'
+          - '3.4'
           # Latest version
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '16.x'
+          node-version: 22
 
-      - name: Install Dependencies
-        run: |
-          curl https://install.meteor.com | /bin/sh
-          npm i -g @zodern/mtest
+      - name: Setup meteor ${{ matrix.meteorRelease }}
+        uses: meteorengineer/setup-meteor@v1
+        with:
+          meteor-release: ${{ matrix.meteorRelease }}
+
+      - name: cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-22-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-22-
+
       - name: Run Tests
         run: |
-          mtest --package ./ --once ${{ matrix.meteorRelease }}
+          cd test-proxy
+          npm ci
+          npm run test
